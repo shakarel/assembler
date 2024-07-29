@@ -1,3 +1,7 @@
 # ninja log v6
+0	21	1721570289366425694	CMakeFiles/assembler.dir/src/main.c.o	1a6ad7fd70eb5868
+1	44	1721570948580444967	build.ninja	c1fb7ce4e1c1854a
+2	137	1721568579344558493	CMakeFiles/assembler.dir/src/something.c.o	522ed79f2b1b47b7
 1	46	1721554965546166717	CMakeFiles/assembler.dir/main.c.o	83cf4c8c14b934c0
-46	74	1721554965591730608	assembler	53abee1daca875d2
+21	45	1721570289386785238	assembler	4d98a8b253470ff
+3	146	1721570274916467145	CMakeFiles/assembler.dir/src/macros.c.o	644358f0bef8613d
