@@ -1,51 +1,97 @@
-#include <stdio.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
-#include "../include/macros.h"
 #include "../include/preprocessor.h"
 
-void preprocess(FILE *input, FILE *output) {
-    char line[MAX_LINE_LENGTH];
-    char macro_name[MAX_MACRO_NAME_LENGTH];
-    char macro_code[MAX_CODE_LENGTH];
-    char *expanded_code = NULL;
-    int in_macro = 0;
+#include <ctype.h>
 
-    macro_code[0] = '\0'; /* Initialize the macro code to be empty */
+#include "../include/macros.h"
 
-    /* Read each line of the file */
-    while (fgets(line, MAX_LINE_LENGTH, input)) {
+void preprocessor(char *input) {
+    FILE *input_file;
+    FILE *output_file;
+    MacroTable *table;
 
-        /* Determine if a macro is being declared */
-        if (strncmp(line, MACRO_START, strlen(MACRO_START)) == 0) {
-            sscanf(line, "macr %s", macro_name);
-            in_macro = 1;
-            macro_code[0] = '\0'; /* Reset the macro code for the upcoming macro */
+    char line[MAX_LINE_LEN];
+    int in_macro;
+    char macro_name[MAX_LINE_LEN];
+    char macro_code[MAX_LINE_LEN * 10];
+
+    macro_name[0] = '\0';
+    macro_code[0] = '\0';
+    in_macro = 0;
+
+    input_file = fopen(add_as_to_file_name(input), "r");
+    if (input_file == NULL) {
+        fprintf(stderr, "Error: Failed to open input file.\n");
+        exit(1);
+    }
+
+    output_file = fopen(add_am_to_file_name(input), "w");
+    if (output_file == NULL) {
+        fprintf(stderr, "Error: Failed to open output file.\n");
+        fclose(input_file);
+        exit(1);
+    }
+
+    table = initialize_macro_table(0);
+    if (!table) {
+        fclose(input_file);
+        fclose(output_file);
+        exit(1);
+    }
+
+    while (fgets(line, MAX_LINE_LEN, input_file)) {
+        char *start;
+        char *end;
+
+        start = line;
+        while (isspace((unsigned char)*start)) start++;
+        end  = line + strlen(line) - 1;
+        while (end > start && isspace((unsigned char)*end)) end--;
+        end[1] = '\0';
+
+        if (start[0] == '\0') {
+            continue;
         }
 
-        /* Determine if ending a macro declaration */
-        else if (strncmp(line, MACRO_END, strlen(MACRO_END)) == 0) {
-            add_macro(macro_name, macro_code);
-            in_macro = 0;
-        }
+        switch (determine_line_type(table, start, MAX_LINE_LEN)) {
+            case MACRO_DEFINITION:
+                sscanf(start, "macr %s", macro_name);
+                in_macro = 1;
+                macro_code[0] = '\0';
+                break;
 
-        /* If inside macro definition - concatenate the line to the current macro code */
-        else if (in_macro) {
-            strcat(macro_code, line);
-        }
+            case MACRO_END_DEFINITION:
+                add_macro(table, macro_name, macro_code);
+                in_macro = 0;
+                break;
 
-        /* Any other line */
-        else {
-            /* Replace the \n in the word with \0 (null terminator) */
-            line[strcspn(line, "\n")] = '\0';
-            expanded_code = get_macro_code(line);
+            case MACRO_CALL:
+                {
+                    char *expanded_code = get_macro_code(table, start);
+                    if (expanded_code) {
+                        fputs(expanded_code, output_file);
+                    } else {
+                        fputs(start, output_file);
+                        fputs("\n", output_file);
+                    }
+                }
+                break;
 
-            if (expanded_code) {
-                fputs(expanded_code, output);
-            }
-            else {
-                fputs(line, output);
-            }
+            default:
+                if (in_macro) {
+                    strcat(macro_code, start);
+                    strcat(macro_code, "\n");
+                } else {
+                    fputs(start, output_file);
+                    fputs("\n", output_file);
+                }
+                break;
         }
     }
+
+    fclose(input_file);
+    fclose(output_file);
+    free_macro_table(table);
 }

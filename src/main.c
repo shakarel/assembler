@@ -1,36 +1,19 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include "../include/preprocessor.h"
 
-int main(const int argc, char *argv[]) {
-    FILE *input;
-    FILE *output;
+int main(int argc, char *argv[]) {
+    char *input_file;
 
-    if (argc != 3) {
-        fprintf(stderr, "Usage: %s <input file> <output file>\n", argv[0]);
+    if (argc != 2) {
+        fprintf(stderr, "Usage: %s <input_file>\n", argv[0]);
         return 1;
     }
 
-    input = NULL;
-    output = NULL;
+    input_file = argv[1];
 
-    input = fopen(argv[1], "r");
-    if (input == NULL) {
-        perror("Error opening input file");
-        return 1;
-    }
+    preprocessor(input_file);
 
-    output = fopen(argv[2], "w");
-    if (output == NULL) {
-        perror("Error opening output file");
-        fclose(input);
-        return 1;
-    }
-
-    preprocess(input, output);
-
-    fclose(input);
-    fclose(output);
+    printf("Preprocessing completed. Output written to: %s\n", add_am_to_file_name(input_file));
 
     return 0;
 }

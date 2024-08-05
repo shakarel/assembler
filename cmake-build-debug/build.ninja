@@ -67,6 +67,12 @@ build CMakeFiles/assembler.dir/src/preprocessor.c.o: C_COMPILER__assembler_unsca
   OBJECT_DIR = CMakeFiles/assembler.dir
   OBJECT_FILE_DIR = CMakeFiles/assembler.dir/src
 
+build CMakeFiles/assembler.dir/src/helper_preprocessor_functions.c.o: C_COMPILER__assembler_unscanned_Debug /Users/shahar/CLionProjects/assembler/src/helper_preprocessor_functions.c || cmake_object_order_depends_target_assembler
+  DEP_FILE = CMakeFiles/assembler.dir/src/helper_preprocessor_functions.c.o.d
+  FLAGS = -g -std=gnu11 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk -fcolor-diagnostics
+  OBJECT_DIR = CMakeFiles/assembler.dir
+  OBJECT_FILE_DIR = CMakeFiles/assembler.dir/src
+
 
 # =============================================================================
 # Link build statements for EXECUTABLE target assembler
@@ -75,7 +81,7 @@ build CMakeFiles/assembler.dir/src/preprocessor.c.o: C_COMPILER__assembler_unsca
 #############################################
 # Link the executable assembler
 
-build assembler: C_EXECUTABLE_LINKER__assembler_Debug CMakeFiles/assembler.dir/src/main.c.o CMakeFiles/assembler.dir/src/macros.c.o CMakeFiles/assembler.dir/src/preprocessor.c.o
+build assembler: C_EXECUTABLE_LINKER__assembler_Debug CMakeFiles/assembler.dir/src/main.c.o CMakeFiles/assembler.dir/src/macros.c.o CMakeFiles/assembler.dir/src/preprocessor.c.o CMakeFiles/assembler.dir/src/helper_preprocessor_functions.c.o
   FLAGS = -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk
   OBJECT_DIR = CMakeFiles/assembler.dir
   POST_BUILD = :
