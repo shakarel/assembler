@@ -46,9 +46,11 @@ cmake_install.cmake
 *.s
 *.S
 
-# Ignore the makefile and output directories
-Makefile
+# Ignore output directories
 output/
 
 # Ignore input files (if you want to keep them local)
 input/
+
+# Ignore macOS system files
+.DS_Store
