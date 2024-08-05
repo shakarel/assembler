@@ -1,0 +1,54 @@
+# Ignore build directories
+build/
+cmake-build-debug/
+cmake-build-release/
+
+# Ignore cmake files
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+
+# Ignore user-specific files
+*.user
+*.user.*
+*.swp
+*.swo
+*.idea/
+
+# Ignore temporary files
+*.tmp
+*.log
+
+# Ignore executable files
+*.out
+*.exe
+
+# Ignore object files
+*.o
+*.obj
+*.lo
+*.la
+*.a
+*.lib
+
+# Ignore compiled dynamic libraries
+*.dll
+*.dylib
+*.so
+
+# Ignore precompiled headers
+*.gch
+*.pch
+
+# Ignore static analysis files
+*.i
+*.ii
+*.s
+*.S
+
+# Ignore the makefile and output directories
+Makefile
+output/
+
+# Ignore input files (if you want to keep them local)
+input/
