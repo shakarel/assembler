@@ -1,11 +1,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "../include/preprocessor.h"
-
 #include <ctype.h>
-
+#include "../include/preprocessor.h"
 #include "../include/macros.h"
+
 
 void preprocessor(char *input) {
     FILE *input_file;
@@ -23,7 +22,7 @@ void preprocessor(char *input) {
 
     input_file = fopen(add_as_to_file_name(input), "r");
     if (input_file == NULL) {
-        fprintf(stderr, "Error: Failed to open input file.\n");
+        fprintf(stderr, "Error: Failed to open input.as file.\n");
         exit(1);
     }
 
@@ -51,11 +50,10 @@ void preprocessor(char *input) {
         while (end > start && isspace((unsigned char)*end)) end--;
         end[1] = '\0';
 
-        if (start[0] == '\0') {
-            continue;
-        }
-
         switch (determine_line_type(table, start, MAX_LINE_LEN)) {
+            case NULL_LINE:
+                continue;
+
             case MACRO_DEFINITION:
                 sscanf(start, "macr %s", macro_name);
                 in_macro = 1;

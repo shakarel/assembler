@@ -113,6 +113,10 @@ int is_macro_call(MacroTable *table, char *line, int chars_to_read) {
     return 0;
 }
 
+int is_null_line(char *line) {
+    return line[0] == '\0';
+}
+
 LineType determine_line_type(MacroTable *table, char *line, int chars_to_read) {
     /* New Macro definition */
     if (is_macro_definition(line))
@@ -125,6 +129,10 @@ LineType determine_line_type(MacroTable *table, char *line, int chars_to_read) {
     /* Macro call */
     if (is_macro_call(table, line, chars_to_read))
         return MACRO_CALL;
+
+    /* Null line */
+    if (is_null_line(line))
+        return NULL_LINE;
 
     /* Any other line */
     return ANY_OTHER_LINE;

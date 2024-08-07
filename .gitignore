@@ -49,8 +49,8 @@ cmake_install.cmake
 # Ignore output directories
 output/
 
-# Ignore input files (if you want to keep them local)
-input/
+# Ignore input.as files (if you want to keep them local)
+input.as/
 
 # Ignore macOS system files
 .DS_Store

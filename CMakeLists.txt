@@ -9,4 +9,6 @@ add_executable(assembler src/main.c
         src/preprocessor.c
         include/preprocessor.h
         src/helper_preprocessor_functions.c
+        include/ast.h
+        src/frontend.c
 )
