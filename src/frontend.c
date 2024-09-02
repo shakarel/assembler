@@ -37,7 +37,7 @@ static int is_label(char *str) {
 
 static void parse_operand(char *operand, OperandType *operand_type, ASTNode *ast, int operand_index) {
     if (operand[0] == '#') {
-        // Immediate operand
+        /* Immediate operand */
         int value;
         if (is_num(operand + 1, -32768, 32767, &value)) {
             operand_type[operand_index] = OPERAND_IMMEDIATE;
@@ -48,7 +48,7 @@ static void parse_operand(char *operand, OperandType *operand_type, ASTNode *ast
 
 
     } else if (operand[0] == '*') {
-        // Indirect register operand
+        /* Indirect register operand */
         int reg_number;
         if (is_num(operand + 2, 0, 7, &reg_number)) {
             operand_type[operand_index] = OPERAND_INDIRECT_REGISTER;
@@ -59,7 +59,7 @@ static void parse_operand(char *operand, OperandType *operand_type, ASTNode *ast
 
 
     } else if (operand[0] == 'r' && strlen(operand) == 2 && isdigit(operand[1])) {
-        // Immediate register operand
+        /* Immediate register operand */
         int reg_number = operand[1] - '0';
         if (reg_number >= 0 && reg_number <= 7) {
             operand_type[operand_index] = OPERAND_IMMEDIATE_REGISTER;
@@ -72,7 +72,14 @@ static void parse_operand(char *operand, OperandType *operand_type, ASTNode *ast
     } else {
         // Assume it's a label
         operand_type[operand_index] = OPERAND_LABEL;
-        ast->ast.instruction.operands[operand_index].label = strdup(operand);
+
+        int len = strlen(operand);
+        if (len > MAX_LABEL_LEN) {
+            strcpy(ast->syntax_error, "Label too long");
+        } else {
+            strncpy(ast->ast.instruction.operands[operand_index].label, operand, MAX_LABEL_LEN);
+            ast->ast.instruction.operands[operand_index].label[MAX_LABEL_LEN] = '\0';
+        }
     }
 }
 
@@ -128,13 +135,14 @@ ASTNode get_ast_node_from_line(const char *line) {
 
     int token_index = 0;
 
-    // Check if the first token is a label
+    /* Check if the first token is a label */
     if (is_label(tokens.strings[token_index])) {
-        strcpy(ast.label_name, tokens.strings[token_index]);
+        strncpy(ast.label_name, tokens.strings[token_index], strlen(tokens.strings[token_index]) - 1);
+        ast.label_name[strlen(tokens.strings[token_index]) - 1] = '\0';
         token_index++;
     }
 
-    // Determine if the line is an instruction or directive
+    /* Determine if the line is instruction or directive */
     if (token_index < tokens.strings_count) {
         char *first_token = tokens.strings[token_index];
 
@@ -151,7 +159,16 @@ ASTNode get_ast_node_from_line(const char *line) {
             ast.ast.directive.dir_type = DIR_STRING;
             token_index++;
             if (token_index < tokens.strings_count) {
-                ast.ast.directive.dir_operand.string = strdup(tokens.strings[token_index]);
+                int len = strlen(tokens.strings[token_index]);
+
+                if (len > MAX_LABEL_LEN) {
+                    strcpy(ast.syntax_error, "Label too long");
+
+                } else {
+                    strncpy(ast.ast.directive.dir_operand.string, tokens.strings[token_index], MAX_LINE_LEN);
+                    ast.ast.directive.dir_operand.string[MAX_LINE_LEN] = '\0';
+                }
+
             } else {
                 strcpy(ast.syntax_error, "Missing string for .string directive");
             }
@@ -173,16 +190,16 @@ ASTNode get_ast_node_from_line(const char *line) {
             }
             ast.ast.directive.dir_operand.data.data_count = data_index;
         } else {
-            // Assume it's an instruction
+            /* Assume it's an instruction */
             ast.type = AST_INST;
             token_index++;
 
-            // Parse the operands with comma handling
+            /* Parse the operands with comma handling */
             int operand_index = 0;
             bool last_token_was_comma = false;
 
             while (token_index < tokens.strings_count && operand_index < 2) {
-                // Check for commas
+                /* Check for commas */
                 if (strcmp(tokens.strings[token_index], ",") == 0) {
                     if (last_token_was_comma) {
                         strcpy(ast.syntax_error, "Multiple consecutive commas found between operands");
@@ -193,14 +210,14 @@ ASTNode get_ast_node_from_line(const char *line) {
                     continue;
                 }
 
-                // Handle operands
+                /* Handle operands */
                 parse_operand(tokens.strings[token_index], ast.ast.instruction.operand_type, &ast, operand_index);
                 operand_index++;
                 token_index++;
                 last_token_was_comma = false;
             }
 
-            // Additional error if the loop completed but the last token was a comma
+            /* Additional error if the loop completed but the last token was a comma */ 
             if (last_token_was_comma) {
                 strcpy(ast.syntax_error, "Trailing comma found without operand");
             }
@@ -209,7 +226,7 @@ ASTNode get_ast_node_from_line(const char *line) {
         ast.type = AST_NULL_LINE;
     }
 
-    // Clean up allocated strings in tokens
+    /* Clean up allocated strings in tokens */ 
     for (int i = 0; i < tokens.strings_count; i++) {
         free(tokens.strings[i]);
     }

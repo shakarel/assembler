@@ -4,17 +4,19 @@
 #include "../include/frontend.h"
 #include "../include/ast.h"
 
-/* Helper function to print the contents of an ASTNode */
 void print_ast_node(ASTNode *ast) {
+    /* syntax error */
     if (strlen(ast->syntax_error) > 0) {
         printf("Syntax Error: %s\n", ast->syntax_error);
         return;
     }
 
+    /* label */
     if (strlen(ast->label_name) > 0) {
         printf("Label: %s\n", ast->label_name);
     }
 
+    /* directive */
     if (ast->type == AST_DIR) {
         printf("Directive Type: ");
         switch (ast->ast.directive.dir_type) {
@@ -35,6 +37,8 @@ void print_ast_node(ASTNode *ast) {
                 printf("\n");
                 break;
         }
+
+    /* instruction */
     } else if (ast->type == AST_INST) {
         printf("Instruction\n");
         for (int i = 0; i < 2; i++) {
@@ -55,8 +59,8 @@ void print_ast_node(ASTNode *ast) {
 
 /* Test function to test various inputs */
 void run_tests() {
-    const char *tests[] = {"MOV ,r1    ,    r5"};
-    ASTNode ast = get_ast_node_from_line(tests[0]);
+    const char test[] = {"HELLO: mov add,, #50"};
+    ASTNode ast = get_ast_node_from_line(test);
     print_ast_node(&ast);
     printf("\n");
     

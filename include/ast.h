@@ -3,16 +3,19 @@
 
 #define MAX_LABEL_LEN 31
 #define DIRECTIVE_DATA_CAPACITY 80
+#define MAX_LINE_LEN 80
 
 /* Enum for sentence types */
-typedef enum {
+typedef enum
+{
     AST_INST,
     AST_DIR,
     AST_NULL_LINE
 } SentenceType;
 
 /* Enum for directive types */
-typedef enum {
+typedef enum
+{
     DIR_EXTERN,
     DIR_ENTRY,
     DIR_STRING,
@@ -20,25 +23,45 @@ typedef enum {
 } DirectiveType;
 
 /* Enum for instruction types */
-typedef enum {
-    MOV, CMP, ADD, SUB, LEA, CLR, NOT, INC, DEC, JMP, BNE, RED, PRN, JSR, RTS, STOP
+typedef enum
+{
+    MOV,
+    CMP,
+    ADD,
+    SUB,
+    LEA,
+    CLR,
+    NOT,
+    INC,
+    DEC,
+    JMP,
+    BNE,
+    RED,
+    PRN,
+    JSR,
+    RTS,
+    STOP
 } InstructionType;
 
 /* Enum for operand types */
-typedef enum {
-    OPERAND_IMMEDIATE,          /* mov #-1 */
-    OPERAND_LABEL,              /* x: .data 23 or dec x */
-    OPERAND_INDIRECT_REGISTER,  /* inc *r1 */
-    OPERAND_IMMEDIATE_REGISTER  /* clr r1 */
+typedef enum
+{
+    OPERAND_IMMEDIATE,         /* mov #-1 */
+    OPERAND_LABEL,             /* x: .data 23 or dec x */
+    OPERAND_INDIRECT_REGISTER, /* inc *r1 */
+    OPERAND_IMMEDIATE_REGISTER /* clr r1 */
 } OperandType;
 
 /* Struct for directive operands */
-typedef struct {
+typedef struct
+{
     DirectiveType dir_type;
-    union {
-        char *label_name;  /* extern or entry */
-        char *string;      /* string */
-        struct {           /* data */
+    union
+    {
+        char label_name[MAX_LABEL_LEN + 1]; /* extern or entry */
+        char string[MAX_LINE_LEN + 1];      /* string */
+        struct
+        { /* data */
             int data[DIRECTIVE_DATA_CAPACITY];
             int data_count;
         } data;
@@ -46,24 +69,28 @@ typedef struct {
 } Directive;
 
 /* Struct for instruction operands */
-typedef struct {
+typedef struct
+{
     InstructionType inst_type;
     OperandType operand_type[2];
-    union {
+    union
+    {
         int immediate;
-        char *label;
-        int register_number;  /* for both immediate and indirect register  */
+        char label[MAX_LABEL_LEN + 1];
+        int register_number; /* for both immediate and indirect register  */
     } operands[2];
 } Instruction;
 
 /* Main AST Node struct */
-typedef struct {
-    char syntax_error[200];  /* space for error messages */
-    char label_name[MAX_LABEL_LEN + 1];  /* label name */
-    SentenceType type;  /* type of the sentence */
-    union {
-        Directive directive;  /* directive type sentence */
-        Instruction instruction;  /* instruction type sentence */
+typedef struct
+{
+    char syntax_error[200];             /* space for error messages */
+    char label_name[MAX_LABEL_LEN + 1]; /* label name */
+    SentenceType type;                  /* type of the sentence */
+    union
+    {
+        Directive directive;     /* directive type sentence */
+        Instruction instruction; /* instruction type sentence */
     } ast;
 } ASTNode;
 
