@@ -272,6 +272,9 @@ ASTNode get_ast_node_from_line(const char *line)
             operand_index = 0;
             last_token_was_comma = 0;
 
+            if (token_index < tokens.strings_count && strcmp(tokens.strings[token_index], ",") == 0)
+                strcpy(ast.syntax_error, "Comma before first operand");
+
             while (token_index < tokens.strings_count && operand_index < 2)
             {
                 /* Check for commas */
@@ -292,6 +295,13 @@ ASTNode get_ast_node_from_line(const char *line)
                 operand_index++;
                 token_index++;
                 last_token_was_comma = 0;
+
+                /* Check if the last operand is a comma */
+                if (token_index == tokens.strings_count - 1 && strcmp(tokens.strings[token_index], ",") == 0)
+                {
+                    strcpy(ast.syntax_error, "Comma after the last operand");
+                    break;
+                }
             }
         }
     }

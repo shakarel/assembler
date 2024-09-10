@@ -63,7 +63,7 @@ void print_ast_node(ASTNode *ast) {
 
 /* Test function to test various inputs */
 void run_tests(void) {
-    const char test[] = {"XYZ: mov r1"};
+    const char test[] = {"XYZ: mov #4, r3,"};
     ASTNode ast = get_ast_node_from_line(test);
     print_ast_node(&ast);
     printf("\n");
