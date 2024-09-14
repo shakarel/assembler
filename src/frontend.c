@@ -106,7 +106,7 @@ static void parse_operand(char *operand, OperandType *operand_type, ASTNode *ast
 
 /* good */
 seperated_string seperate_string_by_spaces(const char *str)
-{
+{    
     char *str_copy;
     char *current;
     char *start;
@@ -139,12 +139,30 @@ seperated_string seperate_string_by_spaces(const char *str)
             continue;
         }
 
-        /* Handle non-whitespace tokens */
+        /* Handle quoted strings as single tokens */
+        if (*current == '"')
+        {
+            start = ++current;
+
+            while (*current != '\0' && *current != '"')
+                current++;
+
+            if (start != current)
+            {
+                result.strings[result.strings_count] = strndup(start, current - start); 
+                result.strings_count++;
+            }
+
+            if (*current == '"')
+                current++;
+
+            continue;
+        }
+
+        /* Handle non-whitespace, non-comma tokens */
         start = current;
         while (*current != '\0' && !isspace((unsigned char)*current) && *current != ',')
-        {
             current++;
-        }
 
         if (start != current)
         {

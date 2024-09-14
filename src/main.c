@@ -28,7 +28,7 @@ void print_ast_node(ASTNode *ast) {
                 printf(".entry\n");
                 break;
             case DIR_STRING:
-                printf(".string \"%s\"\n", ast->ast.directive.dir_operand.string);
+                printf(".string %s\n", ast->ast.directive.dir_operand.string);
                 break;
             case DIR_DATA: {
                 int i;
@@ -63,7 +63,7 @@ void print_ast_node(ASTNode *ast) {
 
 /* Test function to test various inputs */
 void run_tests(void) {
-    const char test[] = {"XYZ: mov #4, r3,"};
+    const char test[] = {"XYZ: .string \"hello world\""};
     ASTNode ast = get_ast_node_from_line(test);
     print_ast_node(&ast);
     printf("\n");
