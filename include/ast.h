@@ -58,10 +58,10 @@ typedef struct
     DirectiveType dir_type;
     union
     {
-        char label_name[MAX_LABEL_LEN + 1]; /* extern or entry */
-        char string[MAX_LINE_LEN + 1];      /* string */
+        char label_name[MAX_LABEL_LEN + 1];
+        char string[MAX_LINE_LEN + 1];
         struct
-        { /* data */
+        {
             int data[DIRECTIVE_DATA_CAPACITY];
             int data_count;
         } data;
@@ -84,13 +84,13 @@ typedef struct
 /* Main AST Node struct */
 typedef struct
 {
-    char syntax_error[200];             /* space for error messages */
-    char label_name[MAX_LABEL_LEN + 1]; /* label name */
-    SentenceType type;                  /* type of the sentence */
+    char syntax_error[200];
+    char label_name[MAX_LABEL_LEN + 1];
+    SentenceType type;
     union
     {
-        Directive directive;     /* directive type sentence */
-        Instruction instruction; /* instruction type sentence */
+        Directive directive;
+        Instruction instruction;
     } ast;
 } ASTNode;
 
