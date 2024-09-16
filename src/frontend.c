@@ -106,7 +106,7 @@ static void parse_operand(char *operand, OperandType *operand_type, ASTNode *ast
 
 /* good */
 seperated_string seperate_string_by_spaces(const char *str)
-{    
+{
     char *str_copy;
     char *current;
     char *start;
@@ -149,7 +149,7 @@ seperated_string seperate_string_by_spaces(const char *str)
 
             if (start != current)
             {
-                result.strings[result.strings_count] = strndup(start, current - start); 
+                result.strings[result.strings_count] = strndup(start, current - start);
                 result.strings_count++;
             }
 
@@ -209,12 +209,16 @@ ASTNode get_ast_node_from_line(const char *line)
             ast.type = AST_DIR;
             ast.ast.directive.dir_type = DIR_EXTERN;
             token_index++;
+            strcpy(ast.label_name, tokens.strings[token_index]);    
+            ast.label_name[strlen(tokens.strings[token_index])] = '\0';                         
         }
         else if (strcmp(first_token, ".entry") == 0)
         {
             ast.type = AST_DIR;
             ast.ast.directive.dir_type = DIR_ENTRY;
             token_index++;
+            strcpy(ast.label_name, tokens.strings[token_index]);
+            ast.label_name[strlen(tokens.strings[token_index])] = '\0';
         }
         else if (strcmp(first_token, ".string") == 0)
         {
