@@ -58,3 +58,29 @@ Symbol *symbol_look_up(SymbolTable* table, const char* name) {
     }
     return NULL;
 }
+
+void init_data_image(DataImage* image) {
+    image->capacity = INITIAL_SYMBOL_CAPACITY;
+    image->count = 0;
+    image->data = (int*)malloc(image->capacity * sizeof(int));
+    if (image->data == NULL) {
+        fprintf(stderr, "Memory allocation failed\n");
+        exit(1);
+    }
+}
+
+void free_data_image(DataImage* image) {
+    free(image->data);
+}
+
+void add_data(DataImage* image, int data) {
+    if (image->count == image->capacity) {
+        image->capacity *= 2;
+        image->data = (int*)realloc(image->data, image->capacity * sizeof(int));
+        if (image->data == NULL) {
+            fprintf(stderr, "Memory allocation failed\n");
+            exit(1);
+        }
+    }
+    image->data[image->count++] = data;
+}

@@ -209,6 +209,7 @@ ASTNode get_ast_node_from_line(const char *line)
             ast.type = AST_DIR;
             ast.ast.directive.dir_type = DIR_EXTERN;
             token_index++;
+            ast.label_name[0] = '\0';
             strcpy(ast.label_name, tokens.strings[token_index]);    
             ast.label_name[strlen(tokens.strings[token_index])] = '\0';                         
         }
@@ -217,6 +218,7 @@ ASTNode get_ast_node_from_line(const char *line)
             ast.type = AST_DIR;
             ast.ast.directive.dir_type = DIR_ENTRY;
             token_index++;
+            ast.label_name[0] = '\0';
             strcpy(ast.label_name, tokens.strings[token_index]);
             ast.label_name[strlen(tokens.strings[token_index])] = '\0';
         }
