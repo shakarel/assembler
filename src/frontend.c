@@ -244,6 +244,7 @@ ASTNode get_ast_node_from_line(const char *line)
                 if (len > MAX_LABEL_LEN)
                 {
                     strcpy(ast.syntax_error, "Label too long");
+                    return ast;
                 }
                 else
                 {
@@ -254,6 +255,7 @@ ASTNode get_ast_node_from_line(const char *line)
             else
             {
                 strcpy(ast.syntax_error, "Missing string for .string directive");
+                return ast;
             }
         }
         else if (strcmp(first_token, ".data") == 0)
@@ -275,7 +277,7 @@ ASTNode get_ast_node_from_line(const char *line)
                 else
                 {
                     strcpy(ast.syntax_error, "Invalid data value");
-                    break;
+                    return ast;
                 }
 
                 token_index++;
@@ -287,7 +289,7 @@ ASTNode get_ast_node_from_line(const char *line)
                     if (token_index == tokens.strings_count)
                     {
                         strcpy(ast.syntax_error, "Trailing comma without value");
-                        break;
+                        return ast;
                     }
                 }
             }
@@ -318,8 +320,11 @@ ASTNode get_ast_node_from_line(const char *line)
             last_token_was_comma = 0;
             required_operands = get_required_operands(ast.ast.instruction.inst_type);
 
-            if (token_index < tokens.strings_count && strcmp(tokens.strings[token_index], ",") == 0)
+            if (token_index < tokens.strings_count && strcmp(tokens.strings[token_index], ",") == 0) {
                 strcpy(ast.syntax_error, "Comma before first operand");
+                return ast;
+            }
+                
 
             ast.ast.instruction.operand_count = 0;
 
@@ -331,7 +336,7 @@ ASTNode get_ast_node_from_line(const char *line)
                     if (last_token_was_comma == 1)
                     {
                         strcpy(ast.syntax_error, "Multiple consecutive commas found between operands");
-                        break;
+                        return ast;
                     }
                     last_token_was_comma = 1;
                     token_index++;
@@ -349,17 +354,19 @@ ASTNode get_ast_node_from_line(const char *line)
                 if (token_index == tokens.strings_count - 1 && strcmp(tokens.strings[token_index], ",") == 0)
                 {
                     strcpy(ast.syntax_error, "Comma after the last operand");
-                    break;
+                    return ast;
                 }
             }
 
             if (operand_index < required_operands)
             {
                 strcpy(ast.syntax_error, "Not enough operands");
+                return ast;
             }
             else if (operand_index > required_operands)
             {
                 strcpy(ast.syntax_error, "Too many operands");
+                return ast;
             }
         }
     }
