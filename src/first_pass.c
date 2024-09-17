@@ -30,7 +30,9 @@ int first_pass(SymbolTable *symbol_table, const char *am_file_name, FILE *am_fil
 
         /*      XYZ: mov *r3, #5 (good)    or     XYZ: .data 1,2,3  (good)   or     XYZ: .string  "hello there!"  (bad)           */
         /*      add this tommorow (line_ast.type == AST_DIR && line_ast.ast.directive.dir_type == DIR_STRING)                */
-        if (strlen(line_ast.label_name) > 0 && (line_ast.type == AST_INST || (line_ast.type == AST_DIR && line_ast.ast.directive.dir_type == DIR_DATA)))
+        if (strlen(line_ast.label_name) > 0 && (line_ast.type == AST_INST ||
+                                                (line_ast.type == AST_DIR && line_ast.ast.directive.dir_type == DIR_DATA) ||
+                                                (line_ast.type == AST_DIR && line_ast.ast.directive.dir_type == DIR_STRING)))
         {
             if (symbol)
             {
@@ -79,11 +81,22 @@ int first_pass(SymbolTable *symbol_table, const char *am_file_name, FILE *am_fil
 
                 else
                 {
-                    for (i = 0; i < line_ast.ast.directive.dir_operand.data.data_count; i++)
+                    if (line_ast.ast.directive.dir_type == DIR_DATA)
                     {
-                        add_data(data_image, line_ast.ast.directive.dir_operand.data.data[i]);
+                        for (i = 0; i < line_ast.ast.directive.dir_operand.data.data_count; i++)
+                        {
+                            add_data(data_image, line_ast.ast.directive.dir_operand.data.data[i]);
+                        }
+                        DC += line_ast.ast.directive.dir_operand.data.data_count;
                     }
-                    DC += line_ast.ast.directive.dir_operand.data.data_count;
+                    else if (line_ast.ast.directive.dir_type == DIR_STRING)
+                    {
+                        for (i = 0; i < strlen(line_ast.ast.directive.dir_operand.string); i++)
+                        {
+                            add_data(data_image, line_ast.ast.directive.dir_operand.string[i]);
+                        }
+                        DC += strlen(line_ast.ast.directive.dir_operand.string) + 1;
+                    }
                 }
             }
         }
@@ -124,8 +137,11 @@ int first_pass(SymbolTable *symbol_table, const char *am_file_name, FILE *am_fil
 
             else if (line_ast.ast.directive.dir_type == DIR_STRING)
             {
-                /* FIX LOGIC TOMORROW */
-                DC += strlen(line_ast.ast.directive.dir_operand.string);
+                for (i = 0; i < strlen(line_ast.ast.directive.dir_operand.string); i++)
+                {
+                    add_data(data_image, line_ast.ast.directive.dir_operand.string[i]);
+                }
+                DC += strlen(line_ast.ast.directive.dir_operand.string) + 1;
             }
 
             else if (line_ast.ast.directive.dir_type == DIR_ENTRY)
