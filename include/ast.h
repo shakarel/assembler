@@ -25,22 +25,23 @@ typedef enum
 /* Enum for instruction types */
 typedef enum
 {
-    MOV,
-    CMP,
-    ADD,
-    SUB,
-    LEA,
-    CLR,
-    NOT,
-    INC,
-    DEC,
-    JMP,
-    BNE,
-    RED,
-    PRN,
-    JSR,
-    RTS,
-    STOP
+    mov,
+    cmp,
+    add,
+    sub,
+    lea,
+    clr,
+    not,
+    inc,
+    dec,
+    jmp,
+    bne,
+    red,
+    prn,
+    jsr,
+    rts,
+    stop,
+    invalid
 } InstructionType;
 
 /* Enum for operand types */
@@ -95,5 +96,6 @@ typedef struct
 } ASTNode;
 
 ASTNode get_ast_node_from_line(const char *line);
+InstructionType check_instruction_type(char *token);
 
 #endif
