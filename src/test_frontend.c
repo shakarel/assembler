@@ -44,7 +44,8 @@ void print_ast_node(ASTNode *ast) {
     /* instruction */
     } else if (ast->type == AST_INST) {
         int i;
-        printf("Instruction\n");
+        printf("Instruction\nCommand:%u\n", ast->ast.instruction.inst_type);
+        
         for (i = 0; i < 2; i++) {
             if (ast->ast.instruction.operand_type[i] == OPERAND_IMMEDIATE) {
                 printf("Operand %d: Immediate #%d\n", i + 1, ast->ast.instruction.operands[i].immediate);
@@ -63,13 +64,13 @@ void print_ast_node(ASTNode *ast) {
 
 /* Test function to test various inputs */
 void run_tests(void) {
-    const char test[] = {"XYZ: .string \"hello world\""};
+    const char test[] = {"XYZ: not 5, nigger"};
     ASTNode ast = get_ast_node_from_line(test);
     print_ast_node(&ast);
     printf("\n");
 }
 
-/* int main(void) {
+/*int main(void) {
     run_tests();
     return 0;
-} */
+}*/
