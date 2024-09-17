@@ -72,6 +72,7 @@ typedef struct
 /* Struct for instruction operands */
 typedef struct
 {
+    int operand_count;
     InstructionType inst_type;
     OperandType operand_type[2];
     union
@@ -97,5 +98,6 @@ typedef struct
 
 ASTNode get_ast_node_from_line(const char *line);
 InstructionType check_instruction_type(char *token);
+int get_required_operands(InstructionType inst_type);
 
 #endif

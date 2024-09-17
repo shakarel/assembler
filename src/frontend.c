@@ -299,24 +299,31 @@ ASTNode get_ast_node_from_line(const char *line)
             /* Assume it's an instruction */
             int operand_index;
             int last_token_was_comma;
+            int required_operands;
 
             ast.type = AST_INST;
 
             if (token_index < tokens.strings_count)
                 ast.ast.instruction.inst_type = check_instruction_type(tokens.strings[token_index]);
 
-            if (ast.ast.instruction.inst_type == invalid)
-                strcpy(ast.syntax_error, "No instruction found");
-        
+            if (ast.ast.instruction.inst_type == invalid) {
+                strcpy(ast.syntax_error, "Didn't find instruction");
+                return ast;
+            }
+                
+
             token_index++;
 
             operand_index = 0;
             last_token_was_comma = 0;
+            required_operands = get_required_operands(ast.ast.instruction.inst_type);
 
             if (token_index < tokens.strings_count && strcmp(tokens.strings[token_index], ",") == 0)
                 strcpy(ast.syntax_error, "Comma before first operand");
 
-            while (token_index < tokens.strings_count && operand_index < 2)
+            ast.ast.instruction.operand_count = 0;
+
+            while (token_index < tokens.strings_count)
             {
                 /* Check for commas */
                 if (strcmp(tokens.strings[token_index], ",") == 0)
@@ -333,6 +340,7 @@ ASTNode get_ast_node_from_line(const char *line)
 
                 /* Handle operands */
                 parse_operand(tokens.strings[token_index], ast.ast.instruction.operand_type, &ast, operand_index);
+                ast.ast.instruction.operand_count++;
                 operand_index++;
                 token_index++;
                 last_token_was_comma = 0;
@@ -343,6 +351,15 @@ ASTNode get_ast_node_from_line(const char *line)
                     strcpy(ast.syntax_error, "Comma after the last operand");
                     break;
                 }
+            }
+
+            if (operand_index < required_operands)
+            {
+                strcpy(ast.syntax_error, "Not enough operands");
+            }
+            else if (operand_index > required_operands)
+            {
+                strcpy(ast.syntax_error, "Too many operands");
             }
         }
     }

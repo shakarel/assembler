@@ -37,3 +37,34 @@ InstructionType check_instruction_type(char *token) {
     else
         return invalid;
 }
+
+
+int get_required_operands(InstructionType inst_type)
+{
+    switch (inst_type)
+    {
+        case mov:
+        case cmp:
+        case add:
+        case sub:
+        case lea:
+            return 2;
+
+        case clr:
+        case not:
+        case inc:
+        case jmp:
+        case bne:
+        case red:
+        case prn:
+        case jsr:
+            return 1;
+
+        case rts:
+        case stop:
+            return 0;
+
+        default:
+            return -1;
+    }
+}
