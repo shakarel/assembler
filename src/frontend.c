@@ -21,7 +21,7 @@ static int is_num(char *str, int min, int max, int *result)
 }
 
 /* good */
-static int is_label(char *str)
+static int is_label_def(char *str)
 {
     int i;
     int len = strlen(str);
@@ -88,16 +88,25 @@ static void parse_operand(char *operand, OperandType *operand_type, ASTNode *ast
     else
     {
         /* Assume it's a label */
-        int len;
+        int len, i;
         operand_type[operand_index] = OPERAND_LABEL;
 
         len = strlen(operand);
         if (len > MAX_LABEL_LEN)
-        {
             strcpy(ast->syntax_error, "Label too long");
-        }
+        else if (!isalpha(operand[0]))
+            strcpy(ast->syntax_error, "Label must start with an alphabetic letter");
         else
         {
+            for (i = 1; i < len; i++)
+            {
+                if (!isalnum(operand[i]))
+                {
+                    strcpy(ast->syntax_error, "Label contains illegal characters");
+                    break;
+                }
+            }
+
             strncpy(ast->ast.instruction.operands[operand_index].label, operand, MAX_LABEL_LEN);
             ast->ast.instruction.operands[operand_index].label[MAX_LABEL_LEN] = '\0';
         }
@@ -191,7 +200,7 @@ ASTNode get_ast_node_from_line(const char *line)
     token_index = 0;
 
     /* Check if the first token is a label */
-    if (is_label(tokens.strings[token_index]))
+    if (is_label_def(tokens.strings[token_index]))
     {
         strncpy(ast.label_name, tokens.strings[token_index], strlen(tokens.strings[token_index]) - 1);
         ast.label_name[strlen(tokens.strings[token_index]) - 1] = '\0';
@@ -210,8 +219,8 @@ ASTNode get_ast_node_from_line(const char *line)
             ast.ast.directive.dir_type = DIR_EXTERN;
             token_index++;
             ast.label_name[0] = '\0';
-            strcpy(ast.label_name, tokens.strings[token_index]);    
-            ast.label_name[strlen(tokens.strings[token_index])] = '\0';                         
+            strcpy(ast.label_name, tokens.strings[token_index]);
+            ast.label_name[strlen(tokens.strings[token_index])] = '\0';
         }
         else if (strcmp(first_token, ".entry") == 0)
         {
@@ -290,7 +299,15 @@ ASTNode get_ast_node_from_line(const char *line)
             /* Assume it's an instruction */
             int operand_index;
             int last_token_was_comma;
+
             ast.type = AST_INST;
+
+            if (token_index < tokens.strings_count)
+                ast.ast.instruction.inst_type = check_instruction_type(tokens.strings[token_index]);
+
+            if (ast.ast.instruction.inst_type == invalid)
+                strcpy(ast.syntax_error, "No instruction found");
+        
             token_index++;
 
             operand_index = 0;
