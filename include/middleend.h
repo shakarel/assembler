@@ -9,6 +9,9 @@
 #define INITIAL_SYMBOL_CAPACITY 10
 #define MAX_SYMBOL_NAME_LEN 32
 
+extern int IC;
+extern int DC;
+
 typedef enum {
     ENTRY,
     CODE,
