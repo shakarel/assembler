@@ -3,7 +3,6 @@
 #include <ctype.h>
 #include "../include/ast.h"
 #include "../include/frontend.h"
-#include "../include/preprocessor.h"
 
 /* good */
 static int is_num(char *str, int min, int max, int *result)

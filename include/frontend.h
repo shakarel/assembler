@@ -1,7 +1,9 @@
 #ifndef FRONTEND_H
 #define FRONTEND_H
 
-#include "preprocessor.h"
+#include "ast.h"
+
+#define MAX_LINE_LEN 80
 
 typedef struct seperated_string {
     char *strings[MAX_LINE_LEN];

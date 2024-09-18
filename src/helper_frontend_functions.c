@@ -1,5 +1,6 @@
+#include <string.h>
 #include "ast.h"
-#include "middleend.h"
+#include "frontend.h"
 
 InstructionType check_instruction_type(char *token) {
     if (strcmp(token, "mov") == 0)
