@@ -10,7 +10,6 @@ int first_pass(SymbolTable *symbol_table, const char *am_file_name, FILE *am_fil
     int DC = 0;
     int error_flag = 0;
     int line_number = 1;
-    int i;
     ASTNode line_ast = {0};
     Symbol *symbol;
 
@@ -28,11 +27,8 @@ int first_pass(SymbolTable *symbol_table, const char *am_file_name, FILE *am_fil
 
         symbol = symbol_look_up(symbol_table, line_ast.label_name);
 
-        /*      XYZ: mov *r3, #5 (good)    or     XYZ: .data 1,2,3  (good)   or     XYZ: .string  "hello there!"  (bad)           */
-        /*      add this tommorow (line_ast.type == AST_DIR && line_ast.ast.directive.dir_type == DIR_STRING)                */
-        if (strlen(line_ast.label_name) > 0 && (line_ast.type == AST_INST ||
-                                                (line_ast.type == AST_DIR && line_ast.ast.directive.dir_type == DIR_DATA) ||
-                                                (line_ast.type == AST_DIR && line_ast.ast.directive.dir_type == DIR_STRING)))
+        /*      XYZ: mov *r3, #5 (good)    or     XYZ: .data 1,2,3  (good)   or     XYZ: .string  "hello there!"  (good) */
+        if (is_valid_symbol_label(line_ast))
         {
             if (symbol)
             {
@@ -40,6 +36,11 @@ int first_pass(SymbolTable *symbol_table, const char *am_file_name, FILE *am_fil
                 {
                     symbol->type = (line_ast.type == AST_INST) ? ENTRY_CODE : ENTRY_DATA;
                     symbol->address = DC + IC + 100;
+
+                    if (line_ast.type == AST_DIR)
+                        process_directive(symbol_table, line_ast, data_image, &DC);
+                    else if (line_ast.type == AST_INST)
+                        process_instruction(symbol_table, line_ast, &IC, &error_flag);
                 }
                 else
                 {
@@ -58,111 +59,23 @@ int first_pass(SymbolTable *symbol_table, const char *am_file_name, FILE *am_fil
                     error_flag = 1;
                 }
 
-                if (line_ast.type == AST_INST)
-                {   
-                    IC += 1;
-                    if (line_ast.ast.instruction.operand_count == 2 &&
-                        (line_ast.ast.instruction.operand_type[0] == OPERAND_INDIRECT_REGISTER || line_ast.ast.instruction.operand_type[0] == OPERAND_IMMEDIATE_REGISTER) &&
-                        (line_ast.ast.instruction.operand_type[1] == OPERAND_INDIRECT_REGISTER || line_ast.ast.instruction.operand_type[1] == OPERAND_IMMEDIATE_REGISTER))
-                    {
-                        IC += 1;
-                    }
-                    else
-                    {
-                        for (i = 0; i < line_ast.ast.instruction.operand_count; i++)
-                        {
-                            if (line_ast.ast.instruction.operand_type[i] == OPERAND_LABEL)
-                            {
-                                symbol = symbol_look_up(symbol_table, line_ast.ast.instruction.operands[i].label);
-                                if (!symbol)
-                                {
-                                    if (!add_symbol(symbol_table, line_ast.ast.instruction.operands[i].label, 0, ENTRY))
-                                    {
-                                        fprintf(stderr, "Failed to add symbol: %s\n", line_ast.ast.instruction.operands[i].label);
-                                        error_flag = 1;
-                                    }
-                                }
-                            }
-                            IC += 1;
-                        }
-                    }
-                }
-
-                else
-                {
-                    if (line_ast.ast.directive.dir_type == DIR_DATA)
-                    {
-                        for (i = 0; i < line_ast.ast.directive.dir_operand.data.data_count; i++)
-                        {
-                            add_data(data_image, line_ast.ast.directive.dir_operand.data.data[i]);
-                        }
-                        DC += line_ast.ast.directive.dir_operand.data.data_count;
-                    }
-                    else if (line_ast.ast.directive.dir_type == DIR_STRING)
-                    {
-                        for (i = 0; i < strlen(line_ast.ast.directive.dir_operand.string); i++)
-                        {
-                            add_data(data_image, line_ast.ast.directive.dir_operand.string[i]);
-                        }
-                        DC += strlen(line_ast.ast.directive.dir_operand.string) + 1;
-                    }
-                }
+                line_ast.type == AST_INST ? process_instruction(symbol_table, line_ast, &IC, &error_flag) : 
+                                            process_directive(symbol_table, line_ast, data_image, &DC);
             }
         }
 
         /*      mov *r3, #5       */
         else if (line_ast.type == AST_INST)
         {
-            IC += 1;
-            if (line_ast.ast.instruction.operand_count == 2 &&
-                (line_ast.ast.instruction.operand_type[0] == OPERAND_INDIRECT_REGISTER || line_ast.ast.instruction.operand_type[0] == OPERAND_IMMEDIATE_REGISTER) &&
-                (line_ast.ast.instruction.operand_type[1] == OPERAND_INDIRECT_REGISTER || line_ast.ast.instruction.operand_type[1] == OPERAND_IMMEDIATE_REGISTER))
-            {
-                IC += 1;
-            }
-            else
-            {
-                for (i = 0; i < line_ast.ast.instruction.operand_count; i++)
-                {
-                    if (line_ast.ast.instruction.operand_type[i] == OPERAND_LABEL)
-                    {
-                        symbol = symbol_look_up(symbol_table, line_ast.ast.instruction.operands[i].label);
-                        if (!symbol)
-                        {
-                            if (!add_symbol(symbol_table, line_ast.ast.instruction.operands[i].label, 0, ENTRY))
-                            {
-                                fprintf(stderr, "Failed to add symbol: %s\n", line_ast.ast.instruction.operands[i].label);
-                                error_flag = 1;
-                            }
-                        }
-                    }
-                    IC += 1;
-                }
-            }
+            process_instruction(symbol_table, line_ast, &IC, &error_flag);
         }
 
         /*       .data 1,2,3       or    .string "hello world!"    or      .entry XYZ */
         else if (line_ast.type == AST_DIR)
         {
-            if (line_ast.ast.directive.dir_type == DIR_DATA)
-            {
-                for (i = 0; i < line_ast.ast.directive.dir_operand.data.data_count; i++)
-                {
-                    add_data(data_image, line_ast.ast.directive.dir_operand.data.data[i]);
-                }
-                DC += line_ast.ast.directive.dir_operand.data.data_count;
-            }
-
-            else if (line_ast.ast.directive.dir_type == DIR_STRING)
-            {
-                for (i = 0; i < strlen(line_ast.ast.directive.dir_operand.string); i++)
-                {
-                    add_data(data_image, line_ast.ast.directive.dir_operand.string[i]);
-                }
-                DC += strlen(line_ast.ast.directive.dir_operand.string) + 1;
-            }
-
-            else if (line_ast.ast.directive.dir_type == DIR_ENTRY)
+            process_directive(symbol_table, line_ast, data_image, &DC);
+            
+            if (line_ast.ast.directive.dir_type == DIR_ENTRY)
             {
                 if (!add_symbol(symbol_table, line_ast.label_name, 0, ENTRY))
                 {
@@ -171,17 +84,11 @@ int first_pass(SymbolTable *symbol_table, const char *am_file_name, FILE *am_fil
                 }
             }
         }
+        
         line_number++;
     }
 
-    for (i = 0; i < symbol_table->count; i++)
-    {
-        if (symbol_table->symbols[i].type == ENTRY)
-        {
-            fprintf(stderr, "Error: %s is an entry symbol but was not defined\n", symbol_table->symbols[i].name);
-            error_flag = 1;
-        }
-    }
 
+    check_entry_symbols(symbol_table, &error_flag);
     return error_flag;
 }

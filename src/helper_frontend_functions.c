@@ -58,6 +58,7 @@ int get_required_operands(InstructionType inst_type)
         case red:
         case prn:
         case jsr:
+        case dec:
             return 1;
 
         case rts:
