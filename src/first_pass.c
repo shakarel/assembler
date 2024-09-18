@@ -39,7 +39,7 @@ int first_pass(SymbolTable *symbol_table, const char *am_file_name, FILE *am_fil
                 if (symbol->type == ENTRY)
                 {
                     symbol->type = (line_ast.type == AST_INST) ? ENTRY_CODE : ENTRY_DATA;
-                    symbol->address = (line_ast.type == AST_INST) ? IC : DC;
+                    symbol->address = DC + IC + 100;
                 }
                 else
                 {
@@ -49,7 +49,7 @@ int first_pass(SymbolTable *symbol_table, const char *am_file_name, FILE *am_fil
             }
             else
             {
-                int address = (line_ast.type == AST_INST) ? IC : DC;
+                int address = DC + IC + 100;
                 int symbol_type = (line_ast.type == AST_INST) ? CODE : DATA;
 
                 if (!add_symbol(symbol_table, line_ast.label_name, address, symbol_type))
@@ -59,24 +59,33 @@ int first_pass(SymbolTable *symbol_table, const char *am_file_name, FILE *am_fil
                 }
 
                 if (line_ast.type == AST_INST)
-                {
-                    for (i = 0; i < 2; i++)
+                {   
+                    IC += 1;
+                    if (line_ast.ast.instruction.operand_count == 2 &&
+                        (line_ast.ast.instruction.operand_type[0] == OPERAND_INDIRECT_REGISTER || line_ast.ast.instruction.operand_type[0] == OPERAND_IMMEDIATE_REGISTER) &&
+                        (line_ast.ast.instruction.operand_type[1] == OPERAND_INDIRECT_REGISTER || line_ast.ast.instruction.operand_type[1] == OPERAND_IMMEDIATE_REGISTER))
                     {
-                        if (line_ast.ast.instruction.operand_type[i] == OPERAND_LABEL)
+                        IC += 1;
+                    }
+                    else
+                    {
+                        for (i = 0; i < line_ast.ast.instruction.operand_count; i++)
                         {
-                            symbol = symbol_look_up(symbol_table, line_ast.ast.instruction.operands[i].label);
-                            if (!symbol)
+                            if (line_ast.ast.instruction.operand_type[i] == OPERAND_LABEL)
                             {
-                                if (!add_symbol(symbol_table, line_ast.ast.instruction.operands[i].label, 0, ENTRY))
+                                symbol = symbol_look_up(symbol_table, line_ast.ast.instruction.operands[i].label);
+                                if (!symbol)
                                 {
-                                    fprintf(stderr, "Failed to add symbol: %s\n", line_ast.ast.instruction.operands[i].label);
-                                    error_flag = 1;
+                                    if (!add_symbol(symbol_table, line_ast.ast.instruction.operands[i].label, 0, ENTRY))
+                                    {
+                                        fprintf(stderr, "Failed to add symbol: %s\n", line_ast.ast.instruction.operands[i].label);
+                                        error_flag = 1;
+                                    }
                                 }
                             }
+                            IC += 1;
                         }
                     }
-                    /* FIX LOGIC TOMORROW */
-                    IC += 1 + (line_ast.ast.instruction.operand_type[0] >= OPERAND_IMMEDIATE) + (line_ast.ast.instruction.operand_type[1] >= OPERAND_IMMEDIATE);
                 }
 
                 else
@@ -104,23 +113,32 @@ int first_pass(SymbolTable *symbol_table, const char *am_file_name, FILE *am_fil
         /*      mov *r3, #5       */
         else if (line_ast.type == AST_INST)
         {
-            for (i = 0; i < 2; i++)
+            IC += 1;
+            if (line_ast.ast.instruction.operand_count == 2 &&
+                (line_ast.ast.instruction.operand_type[0] == OPERAND_INDIRECT_REGISTER || line_ast.ast.instruction.operand_type[0] == OPERAND_IMMEDIATE_REGISTER) &&
+                (line_ast.ast.instruction.operand_type[1] == OPERAND_INDIRECT_REGISTER || line_ast.ast.instruction.operand_type[1] == OPERAND_IMMEDIATE_REGISTER))
             {
-                if (line_ast.ast.instruction.operand_type[i] == OPERAND_LABEL)
+                IC += 1;
+            }
+            else
+            {
+                for (i = 0; i < line_ast.ast.instruction.operand_count; i++)
                 {
-                    symbol = symbol_look_up(symbol_table, line_ast.ast.instruction.operands[i].label);
-                    if (!symbol)
+                    if (line_ast.ast.instruction.operand_type[i] == OPERAND_LABEL)
                     {
-                        if (!add_symbol(symbol_table, line_ast.ast.instruction.operands[i].label, 0, ENTRY))
+                        symbol = symbol_look_up(symbol_table, line_ast.ast.instruction.operands[i].label);
+                        if (!symbol)
                         {
-                            fprintf(stderr, "Failed to add symbol: %s\n", line_ast.ast.instruction.operands[i].label);
-                            error_flag = 1;
+                            if (!add_symbol(symbol_table, line_ast.ast.instruction.operands[i].label, 0, ENTRY))
+                            {
+                                fprintf(stderr, "Failed to add symbol: %s\n", line_ast.ast.instruction.operands[i].label);
+                                error_flag = 1;
+                            }
                         }
                     }
+                    IC += 1;
                 }
             }
-            /* FIX LOGIC TOMORROW */
-            IC += 1 + (line_ast.ast.instruction.operand_type[0] >= OPERAND_IMMEDIATE) + (line_ast.ast.instruction.operand_type[1] >= OPERAND_IMMEDIATE);
         }
 
         /*       .data 1,2,3       or    .string "hello world!"    or      .entry XYZ */
@@ -162,11 +180,6 @@ int first_pass(SymbolTable *symbol_table, const char *am_file_name, FILE *am_fil
         {
             fprintf(stderr, "Error: %s is an entry symbol but was not defined\n", symbol_table->symbols[i].name);
             error_flag = 1;
-        }
-
-        if (symbol_table->symbols[i].type == DATA || symbol_table->symbols[i].type == ENTRY_DATA)
-        {
-            symbol_table->symbols[i].address += IC;
         }
     }
 
