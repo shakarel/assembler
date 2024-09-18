@@ -2,7 +2,8 @@
 #include "ast.h"
 #include "frontend.h"
 
-InstructionType check_instruction_type(char *token) {
+InstructionType check_instruction_type(char *token)
+{
     if (strcmp(token, "mov") == 0)
         return mov;
     else if (strcmp(token, "cmp") == 0)
@@ -39,34 +40,58 @@ InstructionType check_instruction_type(char *token) {
         return invalid;
 }
 
-
 int get_required_operands(InstructionType inst_type)
 {
     switch (inst_type)
     {
-        case mov:
-        case cmp:
-        case add:
-        case sub:
-        case lea:
-            return 2;
+    case mov:
+    case cmp:
+    case add:
+    case sub:
+    case lea:
+        return 2;
 
-        case clr:
-        case not:
-        case inc:
-        case jmp:
-        case bne:
-        case red:
-        case prn:
-        case jsr:
-        case dec:
-            return 1;
+    case clr:
+    case not:
+    case inc:
+    case jmp:
+    case bne:
+    case red:
+    case prn:
+    case jsr:
+    case dec:
+        return 1;
 
-        case rts:
-        case stop:
-            return 0;
+    case rts:
+    case stop:
+        return 0;
 
-        default:
-            return -1;
+    default:
+        return -1;
     }
+}
+
+int validate_instruction_operands_types(InstructionType inst_type, OperandType *operand_types, int operand_count)
+{
+    if (operand_count > 0 && operand_types[0] == OPERAND_IMMEDIATE)
+    {
+        if (inst_type == mov || inst_type == add || inst_type == sub ||
+            inst_type == clr || inst_type == not || inst_type == inc ||
+            inst_type == dec || inst_type == red)
+            return 0;
+    }
+
+    if (inst_type == lea && operand_count > 1)
+    {
+        if (operand_types[0] == OPERAND_IMMEDIATE || operand_types[1] != OPERAND_LABEL)
+            return 0;
+    }
+
+    if (operand_count > 0 && (operand_types[0] == OPERAND_IMMEDIATE || operand_types[0] == OPERAND_IMMEDIATE_REGISTER))
+    {
+        if (inst_type == jmp || inst_type == bne || inst_type == jsr)
+            return 0;
+    }
+
+    return 1;
 }

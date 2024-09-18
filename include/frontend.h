@@ -11,4 +11,6 @@ typedef struct seperated_string {
 } seperated_string;
 
 seperated_string seperate_string_by_spaces(const char *str);
+int validate_instruction_operands_types(InstructionType inst_type, OperandType *operand_types, int operand_count);
+
 #endif

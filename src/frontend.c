@@ -367,6 +367,12 @@ ASTNode get_ast_node_from_line(const char *line)
                 strcpy(ast.syntax_error, "Too many operands");
                 return ast;
             }
+
+            if (validate_instruction_operands_types(ast.ast.instruction.inst_type, ast.ast.instruction.operand_type, operand_index) == 0)
+            {
+                strcpy(ast.syntax_error, "Invalid operand types");
+                return ast;
+            }
         }
     }
     else
