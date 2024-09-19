@@ -153,6 +153,7 @@ void process_directive(SymbolTable *symbol_table, ASTNode line_ast, DataImage *d
             add_data(data_image, line_ast.ast.directive.dir_operand.string[i]);
         }
         *DC += strlen(line_ast.ast.directive.dir_operand.string) + 1;
+        add_data(data_image, '\0');
     }
 }
 
