@@ -48,6 +48,8 @@ int main(int argc, char *argv[])
 
     first_pass(&unit, argv[1], am_file);
 
+    printf("IC: %d\n", unit.IC);
+    printf("DC: %d\n", unit.DC);
     fclose(am_file);
 
     print_symbol_table(&unit.symbol_table);

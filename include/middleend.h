@@ -38,11 +38,18 @@ typedef struct DataImage {
     int capacity;
 } DataImage;
 
+typedef struct InstructionImage {
+    int *instructions;
+    int count;
+    int capacity;
+} InstructionImage;
+
 typedef struct {
     int IC;
     int DC;
     SymbolTable symbol_table;
     DataImage data_image;
+    InstructionImage instruction_image;
 } TranslationUnit;
 
 void init_symbol_table(SymbolTable *table);
@@ -54,6 +61,9 @@ Symbol *symbol_look_up(SymbolTable *table, const char *name);
 void init_data_image(DataImage *image);
 void free_data_image(DataImage *image);
 void add_data(DataImage *image, int data);
+
+void init_instruction_image(InstructionImage *image);
+void free_instruction_image(InstructionImage *image);
 
 void init_translation_unit(TranslationUnit *unit);
 void free_translation_unit(TranslationUnit *unit);

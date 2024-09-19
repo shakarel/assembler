@@ -104,10 +104,28 @@ void add_data(DataImage *image, int data)
     image->data[image->count++] = data;
 }
 
+void init_instruction_image(InstructionImage *image)
+{
+    image->capacity = INITIAL_SYMBOL_CAPACITY;
+    image->count = 0;
+    image->instructions = (int *)malloc(image->capacity * sizeof(int));
+    if (image->instructions == NULL)
+    {
+        fprintf(stderr, "Memory allocation failed\n");
+        exit(1);
+    }
+}
+
+void free_instruction_image(InstructionImage *image)
+{
+    free(image->instructions);
+}
+
 void init_translation_unit(TranslationUnit *unit)
 {
     init_symbol_table(&unit->symbol_table);
     init_data_image(&unit->data_image);
+    init_instruction_image(&unit->instruction_image);
 }
 
 void free_translation_unit(TranslationUnit *unit)
@@ -186,8 +204,8 @@ void check_entry_symbols(SymbolTable *symbol_table, int *error_flag)
 
 int is_valid_symbol_label(ASTNode ast_line)
 {
-    return (strlen(ast_line.label_name) > 0 && 
-            (ast_line.type == AST_INST || 
-            (ast_line.type == AST_DIR && ast_line.ast.directive.dir_type == DIR_DATA) ||
-            (ast_line.type == AST_DIR && ast_line.ast.directive.dir_type == DIR_STRING)));
+    return (strlen(ast_line.label_name) > 0 &&
+            (ast_line.type == AST_INST ||
+             (ast_line.type == AST_DIR && ast_line.ast.directive.dir_type == DIR_DATA) ||
+             (ast_line.type == AST_DIR && ast_line.ast.directive.dir_type == DIR_STRING)));
 }
