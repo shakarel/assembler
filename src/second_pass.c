@@ -37,7 +37,13 @@ int second_pass(TranslationUnit *unit, const char *am_file_name, FILE *am_file)
                     else if (line_ast.ast.instruction.operand_type[i] == OPERAND_LABEL)
                     {
                         encoded_word = encode_label_operand(line_ast.ast.instruction, i, &unit->symbol_table);
-                        add_instruction(&unit->instruction_image, encoded_word);
+                        if (encoded_word == -1) {
+                            error_flag = 1;
+                            printf("Error: label %s not found\n", line_ast.ast.instruction.operands[i].label);
+                        }
+                        else {
+                            add_instruction(&unit->instruction_image, encoded_word);
+                        }
                     }
                     else if ((line_ast.ast.instruction.operand_type[i] == OPERAND_IMMEDIATE_REGISTER) || (line_ast.ast.instruction.operand_type[i] == OPERAND_INDIRECT_REGISTER))
                     {

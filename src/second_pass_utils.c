@@ -58,7 +58,10 @@ int encode_label_operand(Instruction inst, int operand_index, SymbolTable *symbo
     const char *label_name = inst.operands[operand_index].label;
 
     Symbol *symbol = symbol_look_up(symbol_table, label_name);
-
+    if (symbol == NULL)
+        return -1;
+    
+    
     if (symbol->type == EXTERN)
         word |= 1;
     else
