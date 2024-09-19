@@ -104,6 +104,18 @@ void add_data(DataImage *image, int data)
     image->data[image->count++] = data;
 }
 
+void init_translation_unit(TranslationUnit *unit)
+{
+    init_symbol_table(&unit->symbol_table);
+    init_data_image(&unit->data_image);
+}
+
+void free_translation_unit(TranslationUnit *unit)
+{
+    free_symbol_table(&unit->symbol_table);
+    free_data_image(&unit->data_image);
+}
+
 void process_directive(SymbolTable *symbol_table, ASTNode line_ast, DataImage *data_image, int *DC)
 {
     int i;

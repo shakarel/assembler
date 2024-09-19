@@ -38,6 +38,13 @@ typedef struct DataImage {
     int capacity;
 } DataImage;
 
+typedef struct {
+    int IC;
+    int DC;
+    SymbolTable symbol_table;
+    DataImage data_image;
+} TranslationUnit;
+
 void init_symbol_table(SymbolTable *table);
 void free_symbol_table(SymbolTable *table);
 int add_symbol(SymbolTable *table, const char *name, int address, SymbolType type);
@@ -48,7 +55,10 @@ void init_data_image(DataImage *image);
 void free_data_image(DataImage *image);
 void add_data(DataImage *image, int data);
 
-int first_pass(SymbolTable *symbol_table, const char *am_file_name, FILE *am_file, DataImage *data_image);
+void init_translation_unit(TranslationUnit *unit);
+void free_translation_unit(TranslationUnit *unit);
+
+int first_pass(TranslationUnit *unit, const char *am_file_name, FILE *am_file);
 void process_directive(SymbolTable *symbol_table, ASTNode line_ast, DataImage *data_image, int *DC);
 void process_instruction(SymbolTable *symbol_table, ASTNode line_ast, int *IC, int *error_flag);
 void check_entry_symbols(SymbolTable *symbol_table, int *error_flag);

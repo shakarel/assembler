@@ -29,11 +29,9 @@ void print_data_image(DataImage *data_image)
 int main(int argc, char *argv[])
 {
     FILE *am_file;
-    SymbolTable symbol_table;
-    DataImage data_image;
-    
-    init_symbol_table(&symbol_table);
-    init_data_image(&data_image);
+    TranslationUnit unit;
+
+    init_translation_unit(&unit);
 
     if (argc != 2)
     {
@@ -48,13 +46,14 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-
-    first_pass(&symbol_table, argv[1], am_file, &data_image);
+    first_pass(&unit, argv[1], am_file);
 
     fclose(am_file);
 
-    print_symbol_table(&symbol_table);
-    print_data_image(&data_image);
+    print_symbol_table(&unit.symbol_table);
+    print_data_image(&unit.data_image);
+
+    free_translation_unit(&unit);
 
     return 0;
 }
