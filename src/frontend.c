@@ -217,7 +217,12 @@ ASTNode get_ast_node_from_line(const char *line)
         char *first_token;
         first_token = tokens.strings[token_index];
 
-        if (strcmp(first_token, ".extern") == 0)
+        if (strcmp(first_token, ";") == 0)
+        {
+            ast.type = AST_COMMENT;
+        }
+
+        else if (strcmp(first_token, ".extern") == 0)
         {
             ast.type = AST_DIR;
             ast.ast.directive.dir_type = DIR_EXTERN;

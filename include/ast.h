@@ -10,7 +10,8 @@ typedef enum
 {
     AST_INST,
     AST_DIR,
-    AST_NULL_LINE
+    AST_NULL_LINE,
+    AST_COMMENT
 } SentenceType;
 
 /* Enum for directive types */
