@@ -50,7 +50,8 @@ typedef enum
     OPERAND_IMMEDIATE,         /* mov #-1 */
     OPERAND_LABEL,             /* x: .data 23 or dec x */
     OPERAND_INDIRECT_REGISTER, /* inc *r1 */
-    OPERAND_IMMEDIATE_REGISTER /* clr r1 */
+    OPERAND_IMMEDIATE_REGISTER, /* clr r1 */
+    OPERAND_NONE
 } OperandType;
 
 /* Struct for directive operands */

@@ -26,6 +26,26 @@ void print_data_image(DataImage *data_image)
     }
 }
 
+void print_instruction_image(InstructionImage *instruction_image)
+{
+    int i;
+    printf("\t\t\t\t\t\t\tInstruction Image:\n");
+
+    for (i = 0; i < instruction_image->count; i++)
+    {
+        int bit;
+        unsigned int instruction = instruction_image->instructions[i];
+        printf("Instruction Word %d: ", i);
+
+        for (bit = 14; bit >= 0; bit--)
+        {
+            printf("%d", (instruction >> bit) & 1);
+        }
+
+        printf("\n");
+    }
+}
+
 int main(int argc, char *argv[])
 {
     FILE *am_file;
@@ -47,13 +67,25 @@ int main(int argc, char *argv[])
     }
 
     first_pass(&unit, argv[1], am_file);
-
+    
     printf("IC: %d\n", unit.IC);
     printf("DC: %d\n", unit.DC);
+
+    fclose(am_file);
+
+    am_file = fopen(argv[1], "r");
+    if (!am_file)
+    {
+        fprintf(stderr, "Error: Could not open file %s for second pass\n", argv[1]);
+        return 1;
+    }
+
+    second_pass(&unit, argv[1], am_file);
     fclose(am_file);
 
     print_symbol_table(&unit.symbol_table);
     print_data_image(&unit.data_image);
+    print_instruction_image(&unit.instruction_image);
 
     free_translation_unit(&unit);
 

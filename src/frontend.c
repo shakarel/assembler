@@ -198,6 +198,11 @@ ASTNode get_ast_node_from_line(const char *line)
 
     token_index = 0;
 
+    for (i = 0; i < 2; i++)
+    {
+        ast.ast.instruction.operand_type[i] = OPERAND_NONE;
+    }
+
     /* Check if the first token is a label */
     if (is_label_def(tokens.strings[token_index]))
     {
@@ -307,11 +312,11 @@ ASTNode get_ast_node_from_line(const char *line)
             if (token_index < tokens.strings_count)
                 ast.ast.instruction.inst_type = check_instruction_type(tokens.strings[token_index]);
 
-            if (ast.ast.instruction.inst_type == invalid) {
+            if (ast.ast.instruction.inst_type == invalid)
+            {
                 strcpy(ast.syntax_error, "Didn't find instruction");
                 return ast;
             }
-                
 
             token_index++;
 
@@ -319,11 +324,11 @@ ASTNode get_ast_node_from_line(const char *line)
             last_token_was_comma = 0;
             required_operands = get_required_operands(ast.ast.instruction.inst_type);
 
-            if (token_index < tokens.strings_count && strcmp(tokens.strings[token_index], ",") == 0) {
+            if (token_index < tokens.strings_count && strcmp(tokens.strings[token_index], ",") == 0)
+            {
                 strcpy(ast.syntax_error, "Comma before first operand");
                 return ast;
             }
-                
 
             ast.ast.instruction.operand_count = 0;
 
@@ -355,6 +360,14 @@ ASTNode get_ast_node_from_line(const char *line)
                     strcpy(ast.syntax_error, "Comma after the last operand");
                     return ast;
                 }
+            }
+
+            /* If there's only one operand, place it in operand[1] (destination) and set operand[0] to OPERAND_NONE */
+            if (operand_index == 1)
+            {
+                ast.ast.instruction.operand_type[1] = ast.ast.instruction.operand_type[0];
+                ast.ast.instruction.operands[1] = ast.ast.instruction.operands[0];
+                ast.ast.instruction.operand_type[0] = OPERAND_NONE;
             }
 
             if (operand_index < required_operands)

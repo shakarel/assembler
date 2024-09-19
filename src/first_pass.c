@@ -6,12 +6,12 @@
 int first_pass(TranslationUnit *unit, const char *am_file_name, FILE *am_file)
 {
     char line[81] = {0};
-    unit->IC = 0;
-    unit->DC = 0;
     int error_flag = 0;
     int line_number = 1;
     ASTNode line_ast = {0};
     Symbol *symbol;
+    unit->IC = 0;
+    unit->DC = 0;
 
     while (fgets(line, sizeof(line), am_file))
     {

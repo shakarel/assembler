@@ -9,9 +9,6 @@
 #define INITIAL_SYMBOL_CAPACITY 10
 #define MAX_SYMBOL_NAME_LEN 32
 
-extern int IC;
-extern int DC;
-
 typedef enum {
     ENTRY,
     CODE,
@@ -64,6 +61,7 @@ void add_data(DataImage *image, int data);
 
 void init_instruction_image(InstructionImage *image);
 void free_instruction_image(InstructionImage *image);
+void add_instruction(InstructionImage *image, int instruction);
 
 void init_translation_unit(TranslationUnit *unit);
 void free_translation_unit(TranslationUnit *unit);
@@ -74,4 +72,5 @@ void process_instruction(SymbolTable *symbol_table, ASTNode line_ast, int *IC, i
 void check_entry_symbols(SymbolTable *symbol_table, int *error_flag);
 int is_valid_symbol_label(ASTNode ast_line);
 
+int second_pass(TranslationUnit *unit, const char *am_file_name, FILE *am_file);
 #endif

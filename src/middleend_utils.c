@@ -121,6 +121,21 @@ void free_instruction_image(InstructionImage *image)
     free(image->instructions);
 }
 
+void add_instruction(InstructionImage *image, int instruction)
+{
+    if (image->count == image->capacity)
+    {
+        image->capacity *= 2;
+        image->instructions = (int *)realloc(image->instructions, image->capacity * sizeof(int));
+        if (image->instructions == NULL)
+        {
+            fprintf(stderr, "Memory allocation failed\n");
+            exit(1);
+        }
+    }
+    image->instructions[image->count++] = instruction;
+}
+
 void init_translation_unit(TranslationUnit *unit)
 {
     init_symbol_table(&unit->symbol_table);

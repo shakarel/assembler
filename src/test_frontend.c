@@ -55,6 +55,8 @@ void print_ast_node(ASTNode *ast) {
                 printf("Operand %d: Indirect Register *r%d\n", i + 1, ast->ast.instruction.operands[i].register_number);
             } else if (ast->ast.instruction.operand_type[i] == OPERAND_IMMEDIATE_REGISTER) {
                 printf("Operand %d: Immediate Register r%d\n", i + 1, ast->ast.instruction.operands[i].register_number);
+            } else if (ast->ast.instruction.operand_type[i] == OPERAND_NONE) {
+                printf("Operand %d: no operand found\n", i + 1);
             }
         }
     } else {
@@ -64,13 +66,13 @@ void print_ast_node(ASTNode *ast) {
 
 /* Test function to test various inputs */
 void run_tests(void) {
-    const char test[] = {"XYZ: not 5, nigger"};
+    const char test[] = {"XYZ: prn r3"};
     ASTNode ast = get_ast_node_from_line(test);
     print_ast_node(&ast);
     printf("\n");
 }
 
-/*int main(void) {
+/* int main(void) {
     run_tests();
     return 0;
-}*/
+} */
