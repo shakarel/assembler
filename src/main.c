@@ -1,101 +1,119 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include "../include/ast.h"
+#include "../include/preprocessor.h"
 #include "../include/middleend.h"
 
-void print_symbol_table(SymbolTable *symbol_table)
+void print_object_file(char *base_file_name, TranslationUnit *unit)
 {
+    char output_file_name[256];
     int i;
-    printf("\t\t\t\t\t\t\tSymbol Table:\n");
-    for (i = 0; i < symbol_table->count; i++)
+    FILE *file;
+
+    sprintf(output_file_name, "%s.obj", base_file_name);
+
+    file = fopen(output_file_name, "w");
+    if (file == NULL)
     {
-        printf("Symbol: %s | Address: %d | Type: %d\n",
-               symbol_table->symbols[i].name,
-               symbol_table->symbols[i].address,
-               symbol_table->symbols[i].type);
+        perror("Error opening file");
+        return;
     }
+
+    fprintf(file, "%d %d\n", unit->IC, unit->DC);
+
+    for (i = 0; i < unit->IC; i++)
+    {
+        int value = unit->instruction_image.instructions[i];
+        fprintf(file, "%04d %05o\n", i + 100, value);
+    }
+
+    for (i = 0; i < unit->data_image.count; i++)
+    {
+        int address = unit->IC + 100 + i;
+        int value = unit->data_image.data[i];
+        fprintf(file, "%04d %05o\n", address, value);
+    }
+
+    fclose(file);
 }
 
-void print_data_image(DataImage *data_image)
-{
+void print_entry_file(char *base_file_name, TranslationUnit *unit) {
+    char output_file_name[256];
     int i;
-    printf("\t\t\t\t\t\t\tData Image:\n");
+    FILE *file;
 
-    for (i = 0; i < data_image->count; i++)
-    {
-        int bit;
-        unsigned int data = data_image->data[i];
-        printf("Data Word %d: ", i);
+    sprintf(output_file_name, "%s.ent", base_file_name);
 
-        for (bit = 14; bit >= 0; bit--)
-        {
-            printf("%d", (data >> bit) & 1);
+    file = fopen(output_file_name, "w");
+    if (file == NULL) {
+        perror("Error opening file");
+        return;
+    }
+
+    for (i = 0; i < unit->symbol_table.count; i++) {
+        if (unit->symbol_table.symbols[i].type == ENTRY || unit->symbol_table.symbols[i].type == ENTRY_CODE || unit->symbol_table.symbols[i].type == ENTRY_DATA) {
+            fprintf(file, "%s %d\n", unit->symbol_table.symbols[i].name, unit->symbol_table.symbols[i].address);
         }
-
-        printf("\n");
     }
+
+    fclose(file);
 }
 
-void print_instruction_image(InstructionImage *instruction_image)
-{
+void print_extern_file(char *base_file_name, TranslationUnit *unit) {
+    char output_file_name[256];
     int i;
-    printf("\t\t\t\t\t\t\tInstruction Image:\n");
+    FILE *file;
 
-    for (i = 0; i < instruction_image->count; i++)
-    {
-        int bit;
-        unsigned int instruction = instruction_image->instructions[i];
-        printf("Instruction Word %d: ", i);
+    sprintf(output_file_name, "%s.ext", base_file_name);
 
-        for (bit = 14; bit >= 0; bit--)
-        {
-            printf("%d", (instruction >> bit) & 1);
-        }
-
-        printf("\n");
+    file = fopen(output_file_name, "w");
+    if (file == NULL) {
+        perror("Error opening file");
+        return;
     }
+
+    for (i = 0; i < unit->symbol_table.count; i++) {
+        if (unit->symbol_table.symbols[i].type == EXTERN) {
+            fprintf(file, "%s %d\n", unit->symbol_table.symbols[i].name, unit->symbol_table.symbols[i].address);
+        }
+    }
+
+    fclose(file);
 }
+
 
 int main(int argc, char *argv[])
 {
+    int i;
     FILE *am_file;
     TranslationUnit unit;
-
     init_translation_unit(&unit);
 
-    if (argc != 2)
+    if (argc < 2)
     {
-        fprintf(stderr, "Usage: %s <assembly file>\n", argv[0]);
+        fprintf(stderr, "Usage: %s <input_file>\n", argv[0]);
         return 1;
     }
 
-    am_file = fopen(argv[1], "r");
-    if (!am_file)
+    for (i = 1; i < argc; i++)
     {
-        fprintf(stderr, "Error: Could not open file %s\n", argv[1]);
-        return 1;
+        preprocessor(argv[i]);
+
+        am_file = fopen(add_am_to_file_name(argv[i]), "r");
+        if (am_file)
+        {
+            if (!first_pass(&unit, add_am_to_file_name(argv[i]), am_file))
+            {
+                rewind(am_file);
+                if (!second_pass(&unit, add_am_to_file_name(argv[i]), am_file))
+                {
+                    print_object_file(argv[i], &unit);
+                    print_entry_file(argv[i], &unit);
+                    print_extern_file(argv[i], &unit);
+                }
+            }
+            fclose(am_file);
+        }
+    
     }
-
-    first_pass(&unit, argv[1], am_file);
-
-    printf("IC: %d\n", unit.IC);
-    printf("DC: %d\n", unit.DC);
-
-    fclose(am_file);
-
-    am_file = fopen(argv[1], "r");
-    if (!am_file)
-    {
-        fprintf(stderr, "Error: Could not open file %s for second pass\n", argv[1]);
-        return 1;
-    }
-
-    second_pass(&unit, argv[1], am_file);
-    fclose(am_file);
-
-    print_symbol_table(&unit.symbol_table);
-    print_data_image(&unit.data_image);
-    print_instruction_image(&unit.instruction_image);
 
     free_translation_unit(&unit);
 
