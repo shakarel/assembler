@@ -31,8 +31,14 @@ int first_pass(TranslationUnit *unit, const char *am_file_name, FILE *am_file)
         if (is_valid_symbol_label(line_ast))
         {
             if (symbol)
-            {
-                if (symbol->type == ENTRY)
+            {   
+                if (symbol->type == EXTERN)
+                {
+                    fprintf(stderr, "%s:%d, symbol '%s' is defined as extern\n", am_file_name, line_number, symbol->name);
+                    error_flag = 1;
+                }
+                
+                else if (symbol->type == ENTRY)
                 {
                     symbol->type = (line_ast.type == AST_INST) ? ENTRY_CODE : ENTRY_DATA;
                     symbol->address = unit->DC + unit->IC + 100;
@@ -42,6 +48,7 @@ int first_pass(TranslationUnit *unit, const char *am_file_name, FILE *am_file)
                     else if (line_ast.type == AST_INST)
                         process_instruction(&unit->symbol_table, line_ast, &unit->IC, &error_flag);
                 }
+                
                 else
                 {
                     fprintf(stderr, "%s:%d, redefinition of symbol: '%s'\n", am_file_name, line_number, symbol->name);
@@ -77,6 +84,14 @@ int first_pass(TranslationUnit *unit, const char *am_file_name, FILE *am_file)
             if (line_ast.ast.directive.dir_type == DIR_ENTRY)
             {
                 if (!add_symbol(&unit->symbol_table, line_ast.label_name, 0, ENTRY))
+                {
+                    fprintf(stderr, "Failed to add symbol: %s\n", line_ast.label_name);
+                    error_flag = 1;
+                }
+            }
+            else if (line_ast.ast.directive.dir_type == DIR_EXTERN)
+            {
+                if (!add_symbol(&unit->symbol_table, line_ast.label_name, 0, EXTERN))
                 {
                     fprintf(stderr, "Failed to add symbol: %s\n", line_ast.label_name);
                     error_flag = 1;
