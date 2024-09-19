@@ -47,6 +47,10 @@ int second_pass(TranslationUnit *unit, const char *am_file_name, FILE *am_file)
                 }
             }
         }
+    
+        else if (line_ast.type == AST_DIR) {
+            encode_data_image(&unit->data_image);
+        }
     }
 
     return error_flag;

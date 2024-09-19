@@ -1,4 +1,5 @@
 #include "../include/second_pass.h"
+#include <limits.h>
 
 int encode_operand_type(OperandType type, int shift)
 {
@@ -93,4 +94,19 @@ int two_operands_are_registers(ASTNode *line_ast)
 {
     return line_ast->ast.instruction.operand_type[0] == OPERAND_IMMEDIATE_REGISTER &&
            line_ast->ast.instruction.operand_type[1] == OPERAND_IMMEDIATE_REGISTER;
+}
+
+
+void encode_data_image(DataImage *data_image) {
+    int i;
+
+    for (i = 0; i < data_image->count; i++) {
+        int value = data_image->data[i];
+
+        if (value >= 0 && value <= UCHAR_MAX) {
+            data_image->data[i] = (unsigned char)value;
+        } else {
+            data_image->data[i] = value & 0x7FFF;
+        }
+    }
 }

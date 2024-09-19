@@ -13,4 +13,6 @@ int encode_register_operand(Instruction inst, int operand_index);
 
 int two_operands_are_registers(ASTNode *line_ast);
 
+void encode_data_image(DataImage *data_image);
+
 #endif

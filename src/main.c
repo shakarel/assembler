@@ -20,9 +20,19 @@ void print_data_image(DataImage *data_image)
 {
     int i;
     printf("\t\t\t\t\t\t\tData Image:\n");
+
     for (i = 0; i < data_image->count; i++)
     {
-        printf("Data: %d\n", data_image->data[i]);
+        int bit;
+        unsigned int data = data_image->data[i];
+        printf("Data Word %d: ", i);
+
+        for (bit = 14; bit >= 0; bit--)
+        {
+            printf("%d", (data >> bit) & 1);
+        }
+
+        printf("\n");
     }
 }
 
@@ -67,7 +77,7 @@ int main(int argc, char *argv[])
     }
 
     first_pass(&unit, argv[1], am_file);
-    
+
     printf("IC: %d\n", unit.IC);
     printf("DC: %d\n", unit.DC);
 
