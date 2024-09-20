@@ -93,7 +93,14 @@ int first_pass(TranslationUnit *unit, const char *am_file_name, FILE *am_file)
 
             if (line_ast.ast.directive.dir_type == DIR_ENTRY)
             {
-                if (!add_symbol(&unit->symbol_table, line_ast.label_name, 0, ENTRY))
+                symbol = symbol_look_up(&unit->symbol_table, line_ast.label_name);
+                if (symbol && symbol->type == TO_BE_DEFINED)
+                    symbol->type = ENTRY;
+
+                else if (symbol && (symbol->type == CODE || symbol->type == DATA))
+                    symbol->type = symbol->type == CODE ? ENTRY_CODE : ENTRY_DATA;
+
+                else if (!add_symbol(&unit->symbol_table, line_ast.label_name, 0, ENTRY))
                 {
                     fprintf(stderr, "Failed to add symbol: %s\n", line_ast.label_name);
                     error_flag = 1;
@@ -101,7 +108,12 @@ int first_pass(TranslationUnit *unit, const char *am_file_name, FILE *am_file)
             }
             else if (line_ast.ast.directive.dir_type == DIR_EXTERN)
             {
-                if (!add_symbol(&unit->symbol_table, line_ast.label_name, 0, EXTERN))
+                symbol = symbol_look_up(&unit->symbol_table, line_ast.label_name);
+                if (symbol && symbol->type == TO_BE_DEFINED)
+                    symbol->type = EXTERN;
+
+                
+                else if (!add_symbol(&unit->symbol_table, line_ast.label_name, 0, EXTERN))
                 {
                     fprintf(stderr, "Failed to add symbol: %s\n", line_ast.label_name);
                     error_flag = 1;
