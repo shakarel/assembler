@@ -8,7 +8,7 @@ void print_object_file(char *base_file_name, TranslationUnit *unit)
     int i;
     FILE *file;
 
-    sprintf(output_file_name, "%s.obj", base_file_name);
+    sprintf(output_file_name, "%s.ob", base_file_name);
 
     file = fopen(output_file_name, "w");
     if (file == NULL)
@@ -76,12 +76,8 @@ void print_extern_file(char *base_file_name, TranslationUnit *unit)
         return;
     }
 
-    for (i = 0; i < unit->symbol_table.count; i++)
-    {
-        if (unit->symbol_table.symbols[i].type == EXTERN)
-        {
-            fprintf(file, "%s %d\n", unit->symbol_table.symbols[i].name, unit->symbol_table.symbols[i].address);
-        }
+    for (i = 0; i < unit->extern_usage_table.count; i++) {
+        fprintf(file, "%s %d\n", unit->extern_usage_table.usages[i].name, unit->extern_usage_table.usages[i].address);
     }
 
     fclose(file);
@@ -120,7 +116,10 @@ int main(int argc, char *argv[])
                     printf("Printing files for %s\n\n\n\n\n", am_file_name);
                     print_object_file(argv[i], &unit);
                     print_entry_file(argv[i], &unit);
-                    print_extern_file(argv[i], &unit);
+                    if (unit.extern_usage_table.count > 0)
+                        print_extern_file(argv[i], &unit);
+                    else
+                        printf("No extern symbols were used\n");
                     printf("Done printing files for %s\n\n\n\n\n", am_file_name);
                 }
                 else

@@ -136,17 +136,49 @@ void add_instruction(InstructionImage *image, int instruction)
     image->instructions[image->count++] = instruction;
 }
 
+void init_extern_usage_table(ExternUsageTable *table)
+{
+    table->capacity = INITIAL_SYMBOL_CAPACITY;
+    table->count = 0;
+    table->usages = (ExternSymbolUsage *)malloc(table->capacity * sizeof(ExternSymbolUsage));
+    if (table->usages == NULL)
+    {
+        fprintf(stderr, "Memory allocation failed\n");
+        exit(1);
+    }
+}
+
+void free_extern_usage_table(ExternUsageTable *table)
+{
+    free(table->usages);
+}
+
+void add_extern_usage(ExternUsageTable *table, const char *name, int address)
+{
+    if (table->count == table->capacity)
+    {
+        table->capacity *= 2;
+        table->usages = realloc(table->usages, table->capacity * sizeof(ExternSymbolUsage));
+    }
+    strncpy(table->usages[table->count].name, name, MAX_SYMBOL_NAME_LEN);
+    table->usages[table->count].address = address;
+    table->count++;
+}
+
 void init_translation_unit(TranslationUnit *unit)
 {
     init_symbol_table(&unit->symbol_table);
     init_data_image(&unit->data_image);
     init_instruction_image(&unit->instruction_image);
+    init_extern_usage_table(&unit->extern_usage_table);
 }
 
 void free_translation_unit(TranslationUnit *unit)
 {
     free_symbol_table(&unit->symbol_table);
     free_data_image(&unit->data_image);
+    free_instruction_image(&unit->instruction_image);
+    free_extern_usage_table(&unit->extern_usage_table);
 }
 
 void process_directive(SymbolTable *symbol_table, ASTNode line_ast, DataImage *data_image, int *DC)

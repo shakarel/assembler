@@ -43,12 +43,24 @@ typedef struct InstructionImage {
     int capacity;
 } InstructionImage;
 
+typedef struct ExternSymbolUsage {
+    char name[MAX_SYMBOL_NAME_LEN];
+    int address;
+} ExternSymbolUsage;
+
+typedef struct ExternUsageTable {
+    ExternSymbolUsage* usages;
+    int count;
+    int capacity;
+} ExternUsageTable;
+
 typedef struct {
     int IC;
     int DC;
     SymbolTable symbol_table;
     DataImage data_image;
     InstructionImage instruction_image;
+    ExternUsageTable extern_usage_table;
 } TranslationUnit;
 
 void init_symbol_table(SymbolTable *table);
@@ -65,12 +77,18 @@ void init_instruction_image(InstructionImage *image);
 void free_instruction_image(InstructionImage *image);
 void add_instruction(InstructionImage *image, int instruction);
 
+void init_extern_usage_table(ExternUsageTable *table);
+void free_extern_usage_table(ExternUsageTable *table);
+void add_extern_usage(ExternUsageTable *table, const char *name, int address);
+
 void init_translation_unit(TranslationUnit *unit);
 void free_translation_unit(TranslationUnit *unit);
 
 int first_pass(TranslationUnit *unit, const char *am_file_name, FILE *am_file);
+
 void process_directive(SymbolTable *symbol_table, ASTNode line_ast, DataImage *data_image, int *DC);
 void process_instruction(SymbolTable *symbol_table, ASTNode line_ast, int *IC, int *error_flag);
+
 void check_entry_symbols(SymbolTable *symbol_table, int *error_flag);
 void check_to_be_defined_symbols(SymbolTable *symbol_table, int *error_flag);
 int is_valid_symbol_label(ASTNode ast_line);
