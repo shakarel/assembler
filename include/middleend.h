@@ -15,7 +15,8 @@ typedef enum {
     DATA,
     ENTRY_CODE,
     ENTRY_DATA,
-    EXTERN
+    EXTERN,
+    TO_BE_DEFINED
 } SymbolType;
 
 typedef struct Symbol {
@@ -71,6 +72,7 @@ int first_pass(TranslationUnit *unit, const char *am_file_name, FILE *am_file);
 void process_directive(SymbolTable *symbol_table, ASTNode line_ast, DataImage *data_image, int *DC);
 void process_instruction(SymbolTable *symbol_table, ASTNode line_ast, int *IC, int *error_flag);
 void check_entry_symbols(SymbolTable *symbol_table, int *error_flag);
+void check_to_be_defined_symbols(SymbolTable *symbol_table, int *error_flag);
 int is_valid_symbol_label(ASTNode ast_line);
 
 int second_pass(TranslationUnit *unit, const char *am_file_name, FILE *am_file);

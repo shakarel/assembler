@@ -48,6 +48,16 @@ int first_pass(TranslationUnit *unit, const char *am_file_name, FILE *am_file)
                     else if (line_ast.type == AST_INST)
                         process_instruction(&unit->symbol_table, line_ast, &unit->IC, &error_flag);
                 }
+
+                else if (symbol->type == TO_BE_DEFINED) {
+                    symbol->type = (line_ast.type == AST_INST) ? CODE : DATA;
+                    symbol->address = unit->DC + unit->IC + 100;
+
+                    if (line_ast.type == AST_DIR)
+                        process_directive(&unit->symbol_table, line_ast, &unit->data_image, &unit->DC);
+                    else if (line_ast.type == AST_INST)
+                        process_instruction(&unit->symbol_table, line_ast, &unit->IC, &error_flag);
+                }
                 
                 else
                 {
@@ -103,5 +113,6 @@ int first_pass(TranslationUnit *unit, const char *am_file_name, FILE *am_file)
     }
 
     check_entry_symbols(&unit->symbol_table, &error_flag);
+    check_to_be_defined_symbols(&unit->symbol_table, &error_flag);
     return error_flag;
 }

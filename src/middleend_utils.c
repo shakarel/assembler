@@ -193,7 +193,7 @@ void process_instruction(SymbolTable *symbol_table, ASTNode line_ast, int *IC, i
                 symbol = symbol_look_up(symbol_table, line_ast.ast.instruction.operands[i].label);
                 if (!symbol)
                 {
-                    if (!add_symbol(symbol_table, line_ast.ast.instruction.operands[i].label, 0, ENTRY))
+                    if (!add_symbol(symbol_table, line_ast.ast.instruction.operands[i].label, 0, TO_BE_DEFINED))
                     {
                         fprintf(stderr, "Failed to add symbol: %s\n", line_ast.ast.instruction.operands[i].label);
                         *error_flag = 1;
@@ -213,6 +213,19 @@ void check_entry_symbols(SymbolTable *symbol_table, int *error_flag)
         if (symbol_table->symbols[i].type == ENTRY)
         {
             fprintf(stderr, "Error: %s is an entry symbol but was not defined\n", symbol_table->symbols[i].name);
+            *error_flag = 1;
+        }
+    }
+}
+
+void check_to_be_defined_symbols(SymbolTable *symbol_table, int *error_flag)
+{
+    int i;
+    for (i = 0; i < symbol_table->count; i++)
+    {
+        if (symbol_table->symbols[i].type == TO_BE_DEFINED)
+        {
+            fprintf(stderr, "Error: %s is used but was not defined\n", symbol_table->symbols[i].name);
             *error_flag = 1;
         }
     }
