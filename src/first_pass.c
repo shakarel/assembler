@@ -81,7 +81,7 @@ int first_pass(TranslationUnit *unit, const char *am_file_name, FILE *am_file)
                     : process_directive(&unit->symbol_table, line_ast, &unit->data_image, &unit->DC);
             }
         }
-        /*      mov *r3, #5       */
+        /*      mov *r3, #5    or   mov XYZ, #3   */
         else if (line_ast.type == AST_INST)
         {
             process_instruction(&unit->symbol_table, line_ast, &unit->IC, &error_flag);

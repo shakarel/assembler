@@ -46,6 +46,7 @@ typedef struct InstructionImage {
 typedef struct ExternSymbolUsage {
     char name[MAX_SYMBOL_NAME_LEN];
     int address;
+    SymbolType type;
 } ExternSymbolUsage;
 
 typedef struct ExternUsageTable {
@@ -79,7 +80,7 @@ void add_instruction(InstructionImage *image, int instruction);
 
 void init_extern_usage_table(ExternUsageTable *table);
 void free_extern_usage_table(ExternUsageTable *table);
-void add_extern_usage(ExternUsageTable *table, const char *name, int address);
+void add_extern_usage(ExternUsageTable *table, const char *name, int address, SymbolType type);
 
 void init_translation_unit(TranslationUnit *unit);
 void free_translation_unit(TranslationUnit *unit);

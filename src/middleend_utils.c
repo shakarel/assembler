@@ -153,7 +153,7 @@ void free_extern_usage_table(ExternUsageTable *table)
     free(table->usages);
 }
 
-void add_extern_usage(ExternUsageTable *table, const char *name, int address)
+void add_extern_usage(ExternUsageTable *table, const char *name, int address, SymbolType type)
 {
     if (table->count == table->capacity)
     {
@@ -162,6 +162,7 @@ void add_extern_usage(ExternUsageTable *table, const char *name, int address)
     }
     strncpy(table->usages[table->count].name, name, MAX_SYMBOL_NAME_LEN);
     table->usages[table->count].address = address;
+    table->usages[table->count].type = type;
     table->count++;
 }
 
@@ -225,7 +226,7 @@ void process_instruction(SymbolTable *symbol_table, ASTNode line_ast, int *IC, i
                 symbol = symbol_look_up(symbol_table, line_ast.ast.instruction.operands[i].label);
                 if (!symbol)
                 {
-                    if (!add_symbol(symbol_table, line_ast.ast.instruction.operands[i].label, 0, TO_BE_DEFINED))
+                    if (!add_symbol(symbol_table, line_ast.ast.instruction.operands[i].label, *IC + 100, TO_BE_DEFINED))
                     {
                         fprintf(stderr, "Failed to add symbol: %s\n", line_ast.ast.instruction.operands[i].label);
                         *error_flag = 1;
