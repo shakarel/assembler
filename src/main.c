@@ -138,6 +138,10 @@ int main(int argc, char *argv[])
             fprintf(stderr, "Error opening file %s, no files were generated\n", am_file_name);
     }
 
+    print_symbol_table(&unit.symbol_table);
+    print_instruction_image(&unit.instruction_image);
+    print_data_image(&unit.data_image);
+
     free_translation_unit(&unit);
 
     return 0;

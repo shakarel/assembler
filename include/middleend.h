@@ -75,5 +75,10 @@ void check_entry_symbols(SymbolTable *symbol_table, int *error_flag);
 void check_to_be_defined_symbols(SymbolTable *symbol_table, int *error_flag);
 int is_valid_symbol_label(ASTNode ast_line);
 
+
+void print_symbol_table(SymbolTable *symbol_table);
+void print_data_image(DataImage *data_image);
+void print_instruction_image(InstructionImage *instruction_image);
+
 int second_pass(TranslationUnit *unit, const char *am_file_name, FILE *am_file);
 #endif
