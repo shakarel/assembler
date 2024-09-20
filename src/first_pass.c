@@ -31,13 +31,13 @@ int first_pass(TranslationUnit *unit, const char *am_file_name, FILE *am_file)
         if (is_valid_symbol_label(line_ast))
         {
             if (symbol)
-            {   
+            {
                 if (symbol->type == EXTERN)
                 {
                     fprintf(stderr, "%s:%d, symbol '%s' is defined as extern\n", am_file_name, line_number, symbol->name);
                     error_flag = 1;
                 }
-                
+
                 else if (symbol->type == ENTRY)
                 {
                     symbol->type = (line_ast.type == AST_INST) ? ENTRY_CODE : ENTRY_DATA;
@@ -46,19 +46,20 @@ int first_pass(TranslationUnit *unit, const char *am_file_name, FILE *am_file)
                     if (line_ast.type == AST_DIR)
                         process_directive(&unit->symbol_table, line_ast, &unit->data_image, &unit->DC);
                     else if (line_ast.type == AST_INST)
-                        process_instruction(&unit->symbol_table, line_ast, &unit->IC, &error_flag);
+                        process_instruction(&unit->symbol_table, line_ast, &unit->IC, &error_flag, &unit->extern_usage_table);
                 }
 
-                else if (symbol->type == TO_BE_DEFINED) {
+                else if (symbol->type == TO_BE_DEFINED)
+                {
                     symbol->type = (line_ast.type == AST_INST) ? CODE : DATA;
                     symbol->address = unit->DC + unit->IC + 100;
 
                     if (line_ast.type == AST_DIR)
                         process_directive(&unit->symbol_table, line_ast, &unit->data_image, &unit->DC);
                     else if (line_ast.type == AST_INST)
-                        process_instruction(&unit->symbol_table, line_ast, &unit->IC, &error_flag);
+                        process_instruction(&unit->symbol_table, line_ast, &unit->IC, &error_flag, &unit->extern_usage_table);
                 }
-                
+
                 else
                 {
                     fprintf(stderr, "%s:%d, redefinition of symbol: '%s'\n", am_file_name, line_number, symbol->name);
@@ -77,14 +78,14 @@ int first_pass(TranslationUnit *unit, const char *am_file_name, FILE *am_file)
                 }
 
                 line_ast.type == AST_INST
-                    ? process_instruction(&unit->symbol_table, line_ast, &unit->IC, &error_flag)
+                    ? process_instruction(&unit->symbol_table, line_ast, &unit->IC, &error_flag, &unit->extern_usage_table)
                     : process_directive(&unit->symbol_table, line_ast, &unit->data_image, &unit->DC);
             }
         }
         /*      mov *r3, #5    or   mov XYZ, #3   */
         else if (line_ast.type == AST_INST)
         {
-            process_instruction(&unit->symbol_table, line_ast, &unit->IC, &error_flag);
+            process_instruction(&unit->symbol_table, line_ast, &unit->IC, &error_flag, &unit->extern_usage_table);
         }
         /*       .data 1,2,3       or    .string "hello world!"    or      .entry XYZ */
         else if (line_ast.type == AST_DIR)
@@ -110,9 +111,11 @@ int first_pass(TranslationUnit *unit, const char *am_file_name, FILE *am_file)
             {
                 symbol = symbol_look_up(&unit->symbol_table, line_ast.label_name);
                 if (symbol && symbol->type == TO_BE_DEFINED)
+                {
                     symbol->type = EXTERN;
+                    fix_extern_usage_table(&unit->extern_usage_table, symbol->name);
+                }
 
-                
                 else if (!add_symbol(&unit->symbol_table, line_ast.label_name, 0, EXTERN))
                 {
                     fprintf(stderr, "Failed to add symbol: %s\n", line_ast.label_name);

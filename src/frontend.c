@@ -359,7 +359,7 @@ ASTNode get_ast_node_from_line(const char *line)
                 token_index++;
                 last_token_was_comma = 0;
 
-                /* Check if the last operand is a comma */
+                /* Check if the last operand is followed by a comma */
                 if (token_index == tokens.strings_count - 1 && strcmp(tokens.strings[token_index], ",") == 0)
                 {
                     strcpy(ast.syntax_error, "Comma after the last operand");
@@ -367,14 +367,19 @@ ASTNode get_ast_node_from_line(const char *line)
                 }
             }
 
-            /* If there's only one operand, place it in operand[1] (destination) and set operand[0] to OPERAND_NONE */
+            /* Ensure operands are correctly placed */
             if (operand_index == 1)
             {
-                ast.ast.instruction.operand_type[1] = ast.ast.instruction.operand_type[0];
-                ast.ast.instruction.operands[1] = ast.ast.instruction.operands[0];
-                ast.ast.instruction.operand_type[0] = OPERAND_NONE;
+                /* If instruction requires 2 operands, move the first operand to destination (operand[1]) */
+                if (required_operands == 1)
+                {
+                    ast.ast.instruction.operand_type[1] = ast.ast.instruction.operand_type[0];
+                    ast.ast.instruction.operands[1] = ast.ast.instruction.operands[0];
+                    ast.ast.instruction.operand_type[0] = OPERAND_NONE;
+                }
             }
 
+            /* Check if we have the correct number of operands */
             if (operand_index < required_operands)
             {
                 strcpy(ast.syntax_error, "Not enough operands");
@@ -386,6 +391,7 @@ ASTNode get_ast_node_from_line(const char *line)
                 return ast;
             }
 
+            /* Validate operand types */
             if (validate_instruction_operands_types(ast.ast.instruction.inst_type, ast.ast.instruction.operand_type, operand_index) == 0)
             {
                 strcpy(ast.syntax_error, "Invalid operand types");

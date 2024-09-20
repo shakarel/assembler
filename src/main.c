@@ -77,7 +77,8 @@ void print_extern_file(char *base_file_name, TranslationUnit *unit)
     }
 
     for (i = 0; i < unit->extern_usage_table.count; i++) {
-        fprintf(file, "%s %d\n", unit->extern_usage_table.usages[i].name, unit->extern_usage_table.usages[i].address);
+        if (unit->extern_usage_table.usages[i].type == EXTERN)
+            fprintf(file, "%s %d\n", unit->extern_usage_table.usages[i].name, unit->extern_usage_table.usages[i].address);
     }
 
     fclose(file);

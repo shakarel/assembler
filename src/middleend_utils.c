@@ -205,36 +205,60 @@ void process_directive(SymbolTable *symbol_table, ASTNode line_ast, DataImage *d
     }
 }
 
-void process_instruction(SymbolTable *symbol_table, ASTNode line_ast, int *IC, int *error_flag)
+void handle_symbol(SymbolTable *symbol_table, const char *label, int IC, int *error_flag, ExternUsageTable *extern_usage_table)
+{
+    Symbol *symbol = symbol_look_up(symbol_table, label);
+
+    if (symbol && symbol->type == TO_BE_DEFINED)
+    {
+        add_extern_usage(extern_usage_table, symbol->name, IC + 100, TO_BE_DEFINED);
+    }
+    else if (symbol && symbol->type == EXTERN)
+    {
+        add_extern_usage(extern_usage_table, symbol->name, IC + 100, EXTERN);
+    }
+    else if (!symbol)
+    {
+        if (!add_symbol(symbol_table, label, 0, TO_BE_DEFINED))
+        {
+            fprintf(stderr, "Failed to add symbol: %s\n", label);
+            *error_flag = 1;
+        }
+        else
+        {
+            add_extern_usage(extern_usage_table, label, IC + 100, TO_BE_DEFINED);
+        }
+    }
+}
+
+void process_instruction(SymbolTable *symbol_table, ASTNode line_ast, int *IC, int *error_flag, ExternUsageTable *extern_usage_table)
 {
     int i;
-    Symbol *symbol;
 
     *IC += 1;
+
     if (line_ast.ast.instruction.operand_count == 2 &&
         (line_ast.ast.instruction.operand_type[0] == OPERAND_INDIRECT_REGISTER || line_ast.ast.instruction.operand_type[0] == OPERAND_IMMEDIATE_REGISTER) &&
         (line_ast.ast.instruction.operand_type[1] == OPERAND_INDIRECT_REGISTER || line_ast.ast.instruction.operand_type[1] == OPERAND_IMMEDIATE_REGISTER))
     {
         *IC += 1;
+        return;
     }
-    else
+
+    if (line_ast.ast.instruction.operand_count == 1 && line_ast.ast.instruction.operand_type[1] == OPERAND_LABEL)
     {
-        for (i = 0; i < line_ast.ast.instruction.operand_count; i++)
+        handle_symbol(symbol_table, line_ast.ast.instruction.operands[1].label, *IC, error_flag, extern_usage_table);
+        *IC += 1;
+        return;
+    }
+
+    for (i = 0; i < line_ast.ast.instruction.operand_count; i++)
+    {
+        if (line_ast.ast.instruction.operand_type[i] == OPERAND_LABEL)
         {
-            if (line_ast.ast.instruction.operand_type[i] == OPERAND_LABEL)
-            {
-                symbol = symbol_look_up(symbol_table, line_ast.ast.instruction.operands[i].label);
-                if (!symbol)
-                {
-                    if (!add_symbol(symbol_table, line_ast.ast.instruction.operands[i].label, *IC + 100, TO_BE_DEFINED))
-                    {
-                        fprintf(stderr, "Failed to add symbol: %s\n", line_ast.ast.instruction.operands[i].label);
-                        *error_flag = 1;
-                    }
-                }
-            }
-            *IC += 1;
+            handle_symbol(symbol_table, line_ast.ast.instruction.operands[i].label, *IC, error_flag, extern_usage_table);
         }
+        *IC += 1;
     }
 }
 
@@ -270,4 +294,21 @@ int is_valid_symbol_label(ASTNode ast_line)
             (ast_line.type == AST_INST ||
              (ast_line.type == AST_DIR && ast_line.ast.directive.dir_type == DIR_DATA) ||
              (ast_line.type == AST_DIR && ast_line.ast.directive.dir_type == DIR_STRING)));
+}
+
+void fix_extern_usage_table(ExternUsageTable *extern_usage_table, char *name)
+{
+    int i;
+    if (!extern_usage_table || !name)
+        return;
+
+    for (i = 0; i < extern_usage_table->count; i++)
+    {
+        ExternSymbolUsage *usage = &extern_usage_table->usages[i];
+
+        if (strcmp(usage->name, name) == 0)
+        {
+            usage->type = EXTERN;
+        }
+    }
 }
